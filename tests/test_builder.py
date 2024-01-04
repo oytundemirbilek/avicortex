@@ -7,8 +7,8 @@ from avicortex.builders import OpenNeuroGraphBuilder
 DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data")
 
 
-def test_builder() -> None:
-    """Test graph builder class."""
+def test_builder_init() -> None:
+    """Test if graph builder class initialization."""
     # Example run:
     # candi_path = os.path.join(DATA_PATH, "datasets", "candishare_schiz.csv")
     openneuro_bl_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
@@ -21,3 +21,11 @@ def test_builder() -> None:
     assert labels is not None
     assert nodes is not None
     assert edges is not None
+
+
+def test_builder_labels() -> None:
+    """Test if graph builder gets labels correctly."""
+
+
+def test_builder_region_check() -> None:
+    """Test if graph builder checks regions correctly."""
