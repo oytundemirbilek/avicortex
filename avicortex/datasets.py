@@ -25,7 +25,7 @@ DATA_PATH = os.path.join(ROOT_PATH, "..", "data")
 np.random.seed(35813)
 
 
-class GraphDataset(Dataset):  # type: ignore[misc]
+class GraphDataset(Dataset):
     """
     Base class for common functionalities of all datasets.
 
