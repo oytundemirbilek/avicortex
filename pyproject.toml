@@ -51,6 +51,7 @@ docs = [
     "sphinx",
     "sphinx-toolbox",
     "sphinx-rtd-theme",
+    "furo",
 ]
 lint = [
     "isort",
