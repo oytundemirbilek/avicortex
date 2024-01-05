@@ -20,14 +20,14 @@ permissions:
   contents: read
 
 jobs:
-  publish-to-devpi:
+  publish-to-pypi:
     name: Publish python package
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/avicortex  # Replace <package-name> with your PyPI project name
+      name: pypi
+      url: https://pypi.org/p/avicortex
     permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+      id-token: write
 
     steps:
       - uses: actions/checkout@v3
@@ -45,4 +45,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@v1.5.0
         with:
           user: __token__
-          password: ${{ secrets.TEST_PYPI_KEY }}
+          password: ${{ secrets.PYPI_KEY }}
