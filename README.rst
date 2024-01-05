@@ -97,6 +97,13 @@ Let's take a look at the first sample:
 
 >>> input_graph, target_graph = next(iter(hcp_dataloader_tr))
 
+Output input_graph and target_graph will belong to the same patient. And you can also access their medical condition as a classification label:
+
+>>> cls_label = target_graph.y
+
+This class might represent different conditions, such as different diseases, age groups, or gender. For example, in HCP Young Adult dataset, label
+represents patient gender.
+
 Contributing
 ------------
 
