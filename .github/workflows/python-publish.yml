@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-
+  publish-to-devpi:
+    name: Publish python package
     runs-on: ubuntu-latest
     environment:
       name: testpypi
