@@ -310,16 +310,18 @@ class HCPYoungAdultDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
+        freesurfer_out_path: Optional[str] = None,
         mode: str = "inference",
         n_folds: int = 5,
         current_fold: int = 0,
         in_view_idx: Optional[int] = None,
         out_view_idx: Optional[int] = None,
     ):
-        fs_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
+        if freesurfer_out_path is None:
+            freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
         super().__init__(
             hemisphere,
-            HCPGraphBuilder(fs_out_path),
+            HCPGraphBuilder(freesurfer_out_path),
             mode,
             n_folds,
             current_fold,
@@ -423,16 +425,20 @@ class CandiShareSchizophreniaDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
+        freesurfer_out_path: Optional[str] = None,
         mode: str = "inference",
         n_folds: int = 5,
         current_fold: int = 0,
         in_view_idx: Optional[int] = None,
         out_view_idx: Optional[int] = None,
     ):
-        fs_out_path = os.path.join(DATA_PATH, "candishare_schizophrenia_dktatlas.csv")
+        if freesurfer_out_path is None:
+            freesurfer_out_path = os.path.join(
+                DATA_PATH, "candishare_schizophrenia_dktatlas.csv"
+            )
         super().__init__(
             hemisphere,
-            CandiShareGraphBuilder(fs_out_path),
+            CandiShareGraphBuilder(freesurfer_out_path),
             mode,
             n_folds,
             current_fold,
