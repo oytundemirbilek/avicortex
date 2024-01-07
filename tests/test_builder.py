@@ -5,7 +5,7 @@ import pandas as pd
 
 from avicortex.builders import OpenNeuroGraphBuilder
 
-DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "data")
+DATA_PATH = os.path.join(os.path.dirname(__file__), "..", "avicortex", "data")
 
 
 def test_builder_init_timepoints() -> None:

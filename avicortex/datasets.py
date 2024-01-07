@@ -1,6 +1,6 @@
 """Brain graph connectivity datasets in torch Dataset class."""
 import os
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -16,13 +16,8 @@ from avicortex.builders import (
     OpenNeuroGraphBuilder,
 )
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 ROOT_PATH = os.path.dirname(__file__)
-DATA_PATH = os.path.join(ROOT_PATH, "..", "data")
-
-# We used 35813 (part of the Fibonacci Sequence) as the seed.
-np.random.seed(35813)
+DATA_PATH = os.path.join(ROOT_PATH, "data")
 
 
 class GraphDataset(Dataset):
@@ -66,13 +61,18 @@ class GraphDataset(Dataset):
         current_fold: int = 0,
         in_view_idx: Optional[int] = None,
         out_view_idx: Optional[int] = None,
+        device: Union[str, torch.device, None] = None,
+        random_seed: int = 0,
     ):
         super().__init__()
         if hemisphere not in {"left", "right"}:
             raise ValueError("Hemisphere should be 'left' or 'right'.")
         self.mode = mode
         self.hemisphere = hemisphere
-        self.data_path = os.path.join(ROOT_PATH, "..", "data")
+        if device is None:
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = device
+        self.random_seed = random_seed
 
         self.n_folds = n_folds
         self.in_view_idx = in_view_idx
@@ -195,9 +195,8 @@ class GraphDataset(Dataset):
         )
         return view_graph
 
-    @staticmethod
     def get_fold_indices(
-        all_data_size: int, n_folds: int, fold_id: int = 0
+        self, all_data_size: int, n_folds: int, fold_id: int = 0
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Create folds and get indices of train and validation datasets.
@@ -216,7 +215,7 @@ class GraphDataset(Dataset):
         val_indices: numpy ndarray
             Indices to get the validation dataset.
         """
-        kf = KFold(n_splits=n_folds, shuffle=True)
+        kf = KFold(n_splits=n_folds, shuffle=True, random_state=self.random_seed)
         split_indices = kf.split(range(all_data_size))
         train_indices, val_indices = [
             (np.array(train), np.array(val)) for train, val in split_indices
@@ -258,12 +257,12 @@ class GraphDataset(Dataset):
             .reshape(self.n_nodes * self.n_nodes)
         )
         # COO Matrix for index src-dst pairs. And add batch dimensions.
-        edge_index = torch.stack([src_index, dst_index]).to(device)
+        edge_index = torch.stack([src_index, dst_index]).to(self.device)
 
-        edge_attr = torch.from_numpy(edges).float().to(device).unsqueeze(0)
-        x = torch.from_numpy(node_features).float().to(device).unsqueeze(0)
-        y = torch.from_numpy(labels).float().to(device).unsqueeze(0)
-        con_mat = torch.from_numpy(adj_matrix).float().to(device).unsqueeze(0)
+        edge_attr = torch.from_numpy(edges).float().to(self.device).unsqueeze(0)
+        x = torch.from_numpy(node_features).float().to(self.device).unsqueeze(0)
+        y = torch.from_numpy(labels).float().to(self.device).unsqueeze(0)
+        con_mat = torch.from_numpy(adj_matrix).float().to(self.device).unsqueeze(0)
         return PygData(
             x=x, edge_index=edge_index, edge_attr=edge_attr, con_mat=con_mat, y=y
         )
@@ -364,6 +363,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
+        freesurfer_out_path: Optional[str] = None,
         mode: str = "inference",
         timepoint: Optional[str] = None,
         n_folds: int = 5,
@@ -371,16 +371,17 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         in_view_idx: Optional[int] = None,
         out_view_idx: Optional[int] = None,
     ):
-        if timepoint is None:
-            fs_out_path = os.path.join(DATA_PATH, "openneuro_all_dktatlas.csv")
-        elif timepoint == "baseline":
-            fs_out_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
-        elif timepoint == "followup":
-            fs_out_path = os.path.join(DATA_PATH, "openneuro_followup_dktatlas.csv")
-        else:
-            raise ValueError(
-                "timepoint should be one of: 'baseline', 'followup' or None."
-            )
+        if freesurfer_out_path is None:
+            if timepoint is None:
+                fs_out_path = os.path.join(DATA_PATH, "openneuro_all_dktatlas.csv")
+            elif timepoint == "baseline":
+                fs_out_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
+            elif timepoint == "followup":
+                fs_out_path = os.path.join(DATA_PATH, "openneuro_followup_dktatlas.csv")
+            else:
+                raise ValueError(
+                    "timepoint should be one of: 'baseline', 'followup' or None."
+                )
         super().__init__(
             hemisphere,
             OpenNeuroGraphBuilder(fs_out_path),

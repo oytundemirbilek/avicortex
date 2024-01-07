@@ -27,7 +27,7 @@ class GraphBuilder:
         self.column_pattern = r"{}_.*_{}$"
         self.region_name_pos_in_pattern = 1
         # All regions defined in DKT-Atlas
-        regions_path = os.path.join(ROOT_PATH, "..", "data", "region_names.csv")
+        regions_path = os.path.join(ROOT_PATH, "data", "region_names.csv")
         self.dkt_regions = pd.read_csv(regions_path)["Alias_HCP"]
         # Define view names to look for.
         self.views = ["meancurv", "gauscurv", "thickness", "area"]
@@ -252,7 +252,7 @@ class OpenNeuroGraphBuilder(GraphBuilder):
         # Overload label look up dictionary.
         self.label_encoding = {"HC": 0, "CB": 1}
         # OpenNeuro dataset comes with a metadata content which also includes labels.
-        meta_path = os.path.join(ROOT_PATH, "..", "data", "openneuro_participants.csv")
+        meta_path = os.path.join(ROOT_PATH, "data", "openneuro_participants.csv")
         self.meta_data = pd.read_csv(meta_path)
 
     def get_labels(self) -> np.ndarray:
