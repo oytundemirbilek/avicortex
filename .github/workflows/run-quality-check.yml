@@ -27,8 +27,6 @@ jobs:
         with:
           python-version: "3.10"
       - name: Install dependencies
-        if: ${{ github.event.pull_request.merged == false }}
         run: make dependencies_lint
       - name: Run precommit
-        if: ${{ github.event.pull_request.merged == false }}
         run: make pre-commit-ci
