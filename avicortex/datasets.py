@@ -373,18 +373,24 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
     ):
         if freesurfer_out_path is None:
             if timepoint is None:
-                fs_out_path = os.path.join(DATA_PATH, "openneuro_all_dktatlas.csv")
+                freesurfer_out_path = os.path.join(
+                    DATA_PATH, "openneuro_all_dktatlas.csv"
+                )
             elif timepoint == "baseline":
-                fs_out_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
+                freesurfer_out_path = os.path.join(
+                    DATA_PATH, "openneuro_baseline_dktatlas.csv"
+                )
             elif timepoint == "followup":
-                fs_out_path = os.path.join(DATA_PATH, "openneuro_followup_dktatlas.csv")
+                freesurfer_out_path = os.path.join(
+                    DATA_PATH, "openneuro_followup_dktatlas.csv"
+                )
             else:
                 raise ValueError(
                     "timepoint should be one of: 'baseline', 'followup' or None."
                 )
         super().__init__(
             hemisphere,
-            OpenNeuroGraphBuilder(fs_out_path),
+            OpenNeuroGraphBuilder(freesurfer_out_path),
             mode,
             n_folds,
             current_fold,
