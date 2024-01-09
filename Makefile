@@ -31,4 +31,4 @@ pre-commit: venv
 .PHONY:
 pre-commit-ci: venv
 	source .venv/bin/activate
-	pre-commit run --all-files
+	pre-commit run --all-files SKIP=no-commit-to-branch
