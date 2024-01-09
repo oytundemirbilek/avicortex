@@ -30,7 +30,7 @@ class GraphBuilder:
         regions_path = os.path.join(ROOT_PATH, "data", "region_names.csv")
         self.dkt_regions = pd.read_csv(regions_path)["Alias_HCP"]
         # Define view names to look for.
-        self.views = ["meancurv", "gauscurv", "thickness", "area"]
+        self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
 
@@ -229,7 +229,7 @@ class HCPGraphBuilder(GraphBuilder):
         # Overload hemisphere abbreviations.
         self.hemispheres = "L", "R"
         # Overload view names.
-        self.views = ["MeanCurv", "GausCurv", "Thck", "Area"]
+        self.views = ["MeanCurv", "GausCurv", "Thck", "Area", "GrayVol"]
         self.region_name_pos_in_pattern = 2
 
     def get_subject_ids(self) -> pd.Series:
@@ -241,7 +241,7 @@ class HCPGraphBuilder(GraphBuilder):
         pandas Series
             Pandas column that subject IDs are located.
         """
-        return self.freesurfer_df["Subject"]
+        return self.freesurfer_df["Subject"].astype("str")
 
 
 class OpenNeuroGraphBuilder(GraphBuilder):
