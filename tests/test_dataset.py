@@ -7,7 +7,7 @@ from avicortex.datasets import OpenNeuroCannabisUsersDataset
 
 def test_simple_iteration() -> None:
     """Test if a dataset can be iterated."""
-    n_views = 4
+    n_views = 5
     n_nodes = 34
     dataset_obj = OpenNeuroCannabisUsersDataset(hemisphere="left", timepoint="baseline")
     dataloader = PygDataLoader(dataset_obj, batch_size=1)
@@ -92,7 +92,7 @@ def test_cross_validation() -> None:
 
 def test_view_selection() -> None:
     """Test if view selection works correctly."""
-    n_views = 4
+    n_views = 5
     n_nodes = 34
     tr_dataset = OpenNeuroCannabisUsersDataset(
         hemisphere="left", timepoint="baseline", mode="train", in_view_idx=0
