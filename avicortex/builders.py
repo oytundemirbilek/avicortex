@@ -93,6 +93,46 @@ class GraphBuilder:
         """
         return self.freesurfer_df["Subject ID"]
 
+    @staticmethod
+    def anti_vectorize(vector: np.ndarray, n_nodes: int) -> np.ndarray:
+        """
+        Create an adjacency matrix from a given vector of lower triangular matrix.
+
+        Parameters
+        ----------
+        vector: numpy ndarray
+            Vectorized edges of an undirected graph. Shaped (n_nodes * n_nodes)
+        n_nodes: int
+            Number of nodes should be in the graph.
+
+        Returns
+        -------
+        numpy ndarray
+            Adjacency matrix of a single graph.
+        """
+        adj_matrix = np.zeros((n_nodes, n_nodes))
+        adj_matrix[np.triu_indices(n_nodes, k=1)] = vector
+        adj_matrix = adj_matrix.transpose()
+        adj_matrix[np.triu_indices(n_nodes, k=1)] = vector
+        return adj_matrix
+
+    @staticmethod
+    def vectorize(adj_matrix: np.ndarray) -> np.ndarray:
+        """
+        Return the lower triangular matrix as a vector of a given adjacency matrix.
+
+        Parameters
+        ----------
+        adj_matrix: numpy ndarray
+            A symmetric adjacency matrix of a fully connected graph. Shaped (n_nodes, n_nodes).
+
+        Returns
+        -------
+        numpy ndarray
+            Vectorized lower triangular matrix of the graph. Shaped (n_nodes * (n_nodes - 1) / 2).
+        """
+        return np.tril(adj_matrix, k=-1)
+
     def build_node_features(
         self, hemisphere: str, normalize: bool = True
     ) -> np.ndarray:
