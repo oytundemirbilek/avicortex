@@ -287,12 +287,17 @@ class HCPGraphBuilder(GraphBuilder):
 class OpenNeuroGraphBuilder(GraphBuilder):
     """GraphBuilder for Openneuro Cannabis Users dataset baseline and followup."""
 
-    def __init__(self, fs_out_path: str) -> None:
+    def __init__(self, fs_out_path: str, include_all: bool = False) -> None:
         super().__init__(fs_out_path)
         # Overload label look up dictionary.
         self.label_encoding = {"HC": 0, "CB": 1}
         # OpenNeuro dataset comes with a metadata content which also includes labels.
-        meta_path = os.path.join(ROOT_PATH, "data", "openneuro_participants.csv")
+        if include_all:
+            meta_path = os.path.join(
+                ROOT_PATH, "data", "openneuro_participants_all_timepoints.csv"
+            )
+        else:
+            meta_path = os.path.join(ROOT_PATH, "data", "openneuro_participants.csv")
         self.meta_data = pd.read_csv(meta_path)
 
     def get_labels(self) -> np.ndarray:
