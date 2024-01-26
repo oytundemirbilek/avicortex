@@ -388,9 +388,10 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
                 raise ValueError(
                     "timepoint should be one of: 'baseline', 'followup' or None."
                 )
+        include_all = freesurfer_out_path.endswith("openneuro_all_dktatlas.csv")
         super().__init__(
             hemisphere,
-            OpenNeuroGraphBuilder(freesurfer_out_path),
+            OpenNeuroGraphBuilder(freesurfer_out_path, include_all),
             mode,
             n_folds,
             current_fold,
