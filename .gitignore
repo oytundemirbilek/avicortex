@@ -155,6 +155,7 @@ cython_debug/
 logs
 .logs
 .ruff_cache
+.vscode
 
 docs/
 
