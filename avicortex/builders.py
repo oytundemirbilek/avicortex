@@ -1,4 +1,6 @@
 """Utility module for graph construction functions."""
+from __future__ import annotations
+
 import os
 
 import numpy as np
@@ -30,7 +32,7 @@ class GraphBuilder:
         regions_path = os.path.join(ROOT_PATH, "data", "region_names.csv")
         self.dkt_regions = pd.read_csv(regions_path)["Alias_HCP"]
         # Define view names to look for.
-        self.views = ["meancurv", "gauscurv", "thickness", "area"]
+        self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
 
@@ -92,6 +94,46 @@ class GraphBuilder:
             Pandas column that subject IDs are located.
         """
         return self.freesurfer_df["Subject ID"]
+
+    @staticmethod
+    def anti_vectorize(vector: np.ndarray, n_nodes: int) -> np.ndarray:
+        """
+        Create an adjacency matrix from a given vector of lower triangular matrix.
+
+        Parameters
+        ----------
+        vector: numpy ndarray
+            Vectorized edges of an undirected graph. Shaped (n_nodes * n_nodes)
+        n_nodes: int
+            Number of nodes should be in the graph.
+
+        Returns
+        -------
+        numpy ndarray
+            Adjacency matrix of a single graph.
+        """
+        adj_matrix = np.zeros((n_nodes, n_nodes))
+        adj_matrix[np.triu_indices(n_nodes, k=1)] = vector
+        adj_matrix = adj_matrix.transpose()
+        adj_matrix[np.triu_indices(n_nodes, k=1)] = vector
+        return adj_matrix
+
+    @staticmethod
+    def vectorize(adj_matrix: np.ndarray) -> np.ndarray:
+        """
+        Return the lower triangular matrix as a vector of a given adjacency matrix.
+
+        Parameters
+        ----------
+        adj_matrix: numpy ndarray
+            A symmetric adjacency matrix of a fully connected graph. Shaped (n_nodes, n_nodes).
+
+        Returns
+        -------
+        numpy ndarray
+            Vectorized lower triangular matrix of the graph. Shaped (n_nodes * (n_nodes - 1) / 2).
+        """
+        return np.tril(adj_matrix, k=-1)
 
     def build_node_features(
         self, hemisphere: str, normalize: bool = True
@@ -229,7 +271,7 @@ class HCPGraphBuilder(GraphBuilder):
         # Overload hemisphere abbreviations.
         self.hemispheres = "L", "R"
         # Overload view names.
-        self.views = ["MeanCurv", "GausCurv", "Thck", "Area"]
+        self.views = ["MeanCurv", "GausCurv", "Thck", "Area", "GrayVol"]
         self.region_name_pos_in_pattern = 2
 
     def get_subject_ids(self) -> pd.Series:
@@ -241,18 +283,23 @@ class HCPGraphBuilder(GraphBuilder):
         pandas Series
             Pandas column that subject IDs are located.
         """
-        return self.freesurfer_df["Subject"]
+        return self.freesurfer_df["Subject"].astype("str")
 
 
 class OpenNeuroGraphBuilder(GraphBuilder):
     """GraphBuilder for Openneuro Cannabis Users dataset baseline and followup."""
 
-    def __init__(self, fs_out_path: str) -> None:
+    def __init__(self, fs_out_path: str, include_all: bool = False) -> None:
         super().__init__(fs_out_path)
         # Overload label look up dictionary.
         self.label_encoding = {"HC": 0, "CB": 1}
         # OpenNeuro dataset comes with a metadata content which also includes labels.
-        meta_path = os.path.join(ROOT_PATH, "data", "openneuro_participants.csv")
+        if include_all:
+            meta_path = os.path.join(
+                ROOT_PATH, "data", "openneuro_participants_all_timepoints.csv"
+            )
+        else:
+            meta_path = os.path.join(ROOT_PATH, "data", "openneuro_participants.csv")
         self.meta_data = pd.read_csv(meta_path)
 
     def get_labels(self) -> np.ndarray:

@@ -1,6 +1,7 @@
 """Brain graph connectivity datasets in torch Dataset class."""
+from __future__ import annotations
+
 import os
-from typing import Optional, Union
 
 import numpy as np
 import torch
@@ -55,13 +56,13 @@ class GraphDataset(Dataset):
     def __init__(
         self,
         hemisphere: str,
-        gbuilder: "GraphBuilder",
+        gbuilder: GraphBuilder,
         mode: str = "inference",
         n_folds: int = 5,
         current_fold: int = 0,
-        in_view_idx: Optional[int] = None,
-        out_view_idx: Optional[int] = None,
-        device: Union[str, torch.device, None] = None,
+        in_view_idx: int | None = None,
+        out_view_idx: int | None = None,
+        device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
         super().__init__()
@@ -138,7 +139,7 @@ class GraphDataset(Dataset):
         return self.n_subj
 
     @staticmethod
-    def _select_view(graph: "PygData", view_idx: int) -> "PygData":
+    def _select_view(graph: PygData, view_idx: int) -> PygData:
         """
         Select a single view from a given multigraph.
 
@@ -174,7 +175,7 @@ class GraphDataset(Dataset):
             y=graph.y,
         )
 
-    def get_view_graph_for_subject(self, subj_idx: int) -> "PygData":
+    def get_view_graph_for_subject(self, subj_idx: int) -> PygData:
         """
         For a single subject of a given index, combine data from different views and construct a multigraph.
 
@@ -226,7 +227,7 @@ class GraphDataset(Dataset):
     # Utility function to create a single multigraph from given numpy tensor: (n_rois, n_rois, n_views)
     def create_graph_obj(
         self, adj_matrix: np.ndarray, node_features: np.ndarray, labels: np.ndarray
-    ) -> "PygData":
+    ) -> PygData:
         """
         Combine edges, nodes and labels to create a graph object for torch_geometric.
 
@@ -309,12 +310,12 @@ class HCPYoungAdultDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
-        freesurfer_out_path: Optional[str] = None,
+        freesurfer_out_path: str | None = None,
         mode: str = "inference",
         n_folds: int = 5,
         current_fold: int = 0,
-        in_view_idx: Optional[int] = None,
-        out_view_idx: Optional[int] = None,
+        in_view_idx: int | None = None,
+        out_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
@@ -363,13 +364,13 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
-        freesurfer_out_path: Optional[str] = None,
+        freesurfer_out_path: str | None = None,
         mode: str = "inference",
-        timepoint: Optional[str] = None,
+        timepoint: str | None = None,
         n_folds: int = 5,
         current_fold: int = 0,
-        in_view_idx: Optional[int] = None,
-        out_view_idx: Optional[int] = None,
+        in_view_idx: int | None = None,
+        out_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             if timepoint is None:
@@ -388,9 +389,10 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
                 raise ValueError(
                     "timepoint should be one of: 'baseline', 'followup' or None."
                 )
+        include_all = freesurfer_out_path.endswith("openneuro_all_dktatlas.csv")
         super().__init__(
             hemisphere,
-            OpenNeuroGraphBuilder(freesurfer_out_path),
+            OpenNeuroGraphBuilder(freesurfer_out_path, include_all),
             mode,
             n_folds,
             current_fold,
@@ -432,12 +434,12 @@ class CandiShareSchizophreniaDataset(GraphDataset):
     def __init__(
         self,
         hemisphere: str,
-        freesurfer_out_path: Optional[str] = None,
+        freesurfer_out_path: str | None = None,
         mode: str = "inference",
         n_folds: int = 5,
         current_fold: int = 0,
-        in_view_idx: Optional[int] = None,
-        out_view_idx: Optional[int] = None,
+        in_view_idx: int | None = None,
+        out_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(

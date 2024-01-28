@@ -50,8 +50,8 @@ def test_builder_construct_graph() -> None:
     nodes, edges = gbuilder.construct(hem="left")
     assert nodes is not None
     assert edges is not None
-    assert nodes.shape == (34, 42, 4)
-    assert edges.shape == (34, 34, 42, 4)
+    assert nodes.shape == (34, 42, 5)
+    assert edges.shape == (34, 34, 42, 5)
 
 
 def test_builder_region_check() -> None:
