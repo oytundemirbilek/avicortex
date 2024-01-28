@@ -1,4 +1,6 @@
 """Utility module for graph construction functions."""
+from __future__ import annotations
+
 import os
 
 import numpy as np

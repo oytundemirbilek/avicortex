@@ -1,20 +1,22 @@
 [build-system]
-requires = ["setuptools>=64", "setuptools_scm[tool]>=8"]
+requires = ["setuptools>=64", "setuptools_scm[tool]>=7"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "avicortex"
-version = "0.0.7"
+version = "0.0.8"
 description = "Python functions and classes to build connectivity graphs and datasets from Freesurfer's brain cortical measurements."
 keywords = ["graphs", "brain", "freesurfer", "connectome"]
 readme = "README.rst"
 authors = [{ name="Oytun Demirbilek", email="oytun1996@gmail.com" }]
 license = { file = "LICENSE" }
-requires-python = ">=3.9"
+requires-python = ">=3.7"
 classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
