@@ -285,7 +285,7 @@ class StableDict(dict):
 
         return (
             "StableDict({"
-            + ", ".join(["{!r}: {}".format(k, _repr(v)) for k, v in self.iteritems()])
+            + ", ".join([f"{k!r}: {_repr(v)}" for k, v in self.iteritems()])
             + "})"
         )
 
@@ -298,7 +298,7 @@ class StableDict(dict):
 
         return (
             "StableDict(["
-            + ", ".join(["({!r}, {})".format(k, _repr(v)) for k, v in self.iteritems()])
+            + ", ".join([f"({k!r}, {_repr(v)})" for k, v in self.iteritems()])
             + "])"
         )
 

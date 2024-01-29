@@ -414,7 +414,7 @@ def write_table(options, rows, cols, table):
     Write the table from memory to disk. Initialize the writer class.
     """
     tw = TableWriter(rows, cols, table)
-    r1c1 = "{}.{}.{}".format(options.hemi, options.parc, options.meas)
+    r1c1 = f"{options.hemi}.{options.parc}.{options.meas}"
     tw.assign_attributes(
         filename=options.outputfile,
         row1col1=r1c1,
