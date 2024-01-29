@@ -81,6 +81,7 @@ class GraphDataset(Dataset):
         self.current_fold = current_fold
         self.gbuilder = gbuilder
         self.subjects_labels = self.gbuilder.get_labels()
+        self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
         (self.subjects_nodes, self.subjects_edges) = self.gbuilder.construct(
             hem=self.hemisphere
         )
@@ -89,16 +90,17 @@ class GraphDataset(Dataset):
 
         # Keep half of the data as 'unseen' to be used in inference.
         self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
-            self.subjects_labels.shape[0], 2, 0
+            self.subjects_ids.shape[0], 2, 0
         )
 
         if mode in {"train", "validation"}:
             self.seen_subjects_labels = self.subjects_labels[self.seen_data_indices]
             self.seen_subjects_nodes = self.subjects_nodes[self.seen_data_indices]
             self.seen_subjects_edges = self.subjects_edges[self.seen_data_indices]
+            self.seen_subjects_ids = self.subjects_ids[self.seen_data_indices]
 
             self.tr_indices, self.val_indices = self.get_fold_indices(
-                self.seen_subjects_labels.shape[0],
+                self.seen_subjects_ids.shape[0],
                 self.n_folds,
                 self.current_fold,
             )
@@ -107,14 +109,17 @@ class GraphDataset(Dataset):
             self.subjects_labels = self.seen_subjects_labels[self.tr_indices]
             self.subjects_nodes = self.seen_subjects_nodes[self.tr_indices]
             self.subjects_edges = self.seen_subjects_edges[self.tr_indices]
+            self.subjects_ids = self.seen_subjects_ids[self.tr_indices]
         elif mode == "validation":
             self.subjects_labels = self.seen_subjects_labels[self.val_indices]
             self.subjects_nodes = self.seen_subjects_nodes[self.val_indices]
             self.subjects_edges = self.seen_subjects_edges[self.val_indices]
+            self.subjects_ids = self.seen_subjects_ids[self.val_indices]
         elif mode == "test":
             self.subjects_labels = self.subjects_labels[self.unseen_data_indices]
             self.subjects_nodes = self.subjects_nodes[self.unseen_data_indices]
             self.subjects_edges = self.subjects_edges[self.unseen_data_indices]
+            self.subjects_ids = self.subjects_ids[self.unseen_data_indices]
         elif mode == "inference":
             pass
         else:
@@ -166,13 +171,16 @@ class GraphDataset(Dataset):
             if graph.edge_attr is not None
             else None
         )
+        subject_id = graph.subject_id if graph.subject_id is not None else None
+        y = graph.y if graph.y is not None else None
 
         return PygData(
             x=x,
             edge_index=graph.edge_index,
             edge_attr=edge_attr,
             con_mat=con_mat,
-            y=graph.y,
+            y=y,
+            subject_id=subject_id,
         )
 
     def get_view_graph_for_subject(self, subj_idx: int) -> PygData:
@@ -193,6 +201,7 @@ class GraphDataset(Dataset):
             self.subjects_edges[subj_idx],
             self.subjects_nodes[subj_idx],
             self.subjects_labels[subj_idx : subj_idx + 1],
+            self.subjects_ids[subj_idx],
         )
         return view_graph
 
@@ -226,7 +235,11 @@ class GraphDataset(Dataset):
 
     # Utility function to create a single multigraph from given numpy tensor: (n_rois, n_rois, n_views)
     def create_graph_obj(
-        self, adj_matrix: np.ndarray, node_features: np.ndarray, labels: np.ndarray
+        self,
+        adj_matrix: np.ndarray,
+        node_features: np.ndarray,
+        labels: np.ndarray,
+        subject_id: str,
     ) -> PygData:
         """
         Combine edges, nodes and labels to create a graph object for torch_geometric.
@@ -265,7 +278,12 @@ class GraphDataset(Dataset):
         y = torch.from_numpy(labels).float().to(self.device).unsqueeze(0)
         con_mat = torch.from_numpy(adj_matrix).float().to(self.device).unsqueeze(0)
         return PygData(
-            x=x, edge_index=edge_index, edge_attr=edge_attr, con_mat=con_mat, y=y
+            x=x,
+            edge_index=edge_index,
+            edge_attr=edge_attr,
+            con_mat=con_mat,
+            y=y,
+            subject_id=subject_id,
         )
 
     def __repr__(self) -> str:

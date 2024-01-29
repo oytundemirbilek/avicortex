@@ -114,6 +114,10 @@ def test_cross_validation() -> None:
     val_set = set(val_dataset.val_indices)
     assert len(tr_set.intersection(val_set)) == 0
 
+    val_ids = set(val_dataset.subjects_ids)
+    tr_ids = set(tr_dataset.subjects_ids)
+    assert len(tr_ids.intersection(val_ids)) == 0
+
     seen_set = set(test_dataset.seen_data_indices)
     test_set = set(test_dataset.unseen_data_indices)
     assert len(test_set.intersection(seen_set)) == 0
@@ -129,6 +133,10 @@ def test_cross_validation() -> None:
     seen_set = set(test_dataset.seen_data_indices)
     test_set = set(test_dataset.unseen_data_indices)
     assert len(test_set.intersection(seen_set)) == 0
+
+    test_ids = set(test_dataset.subjects_ids)
+    assert len(test_ids.intersection(tr_ids)) == 0
+    assert len(test_ids.intersection(val_ids)) == 0
 
 
 def test_view_selection() -> None:
