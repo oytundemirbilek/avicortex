@@ -1,15 +1,15 @@
-# Table of FreeSurfer cortical parcellation anatomical statistics 
-# 
+# Table of FreeSurfer cortical parcellation anatomical statistics
+#
 # CreationTime 2023/02/13-21:05:22-GMT
 # generating_program mris_anatomical_stats
 # cvs_version 7.2.0
 # mrisurf.c-cvs_version 7.2.0
-# cmdline mris_anatomical_stats -th3 -mgz -cortex ../label/rh.cortex.label -f ../stats/rh.aparc.stats -b -a ../label/rh.aparc.annot -c ../label/aparc.annot.ctab BPDwoPsy_052_MR rh white 
+# cmdline mris_anatomical_stats -th3 -mgz -cortex ../label/rh.cortex.label -f ../stats/rh.aparc.stats -b -a ../label/rh.aparc.annot -c ../label/aparc.annot.ctab BPDwoPsy_052_MR rh white
 # sysname  Linux
 # hostname hpc-submit03gui
 # machine  x86_64
 # user     alaa.bessadok
-# 
+#
 # SUBJECTS_DIR /home/haicu/alaa.bessadok/Oytun_project/freesurfer_results_schiz
 # anatomy_type surface
 # subjectname BPDwoPsy_052_MR
@@ -40,21 +40,21 @@
 # TableCol  4 ColHeader GrayVol
 # TableCol  4 FieldName Gray Matter Volume
 # TableCol  4 Units     mm^3
-# TableCol  5 ColHeader ThickAvg 
+# TableCol  5 ColHeader ThickAvg
 # TableCol  5 FieldName Average Thickness
 # TableCol  5 Units     mm
 # TableCol  6 ColHeader ThickStd
 # TableCol  6 FieldName Thickness StdDev
-# TableCol  6 Units     mm 
+# TableCol  6 Units     mm
 # TableCol  7 ColHeader MeanCurv
 # TableCol  7 FieldName Integrated Rectified Mean Curvature
 # TableCol  7 Units     mm^-1
-# TableCol  8 ColHeader GausCurv 
+# TableCol  8 ColHeader GausCurv
 # TableCol  8 FieldName Integrated Rectified Gaussian Curvature
 # TableCol  8 Units     mm^-2
 # TableCol  9 ColHeader  FoldInd
-# TableCol  9 FieldName  Folding Index 
-# TableCol  9 Units      unitless 
+# TableCol  9 FieldName  Folding Index
+# TableCol  9 Units      unitless
 # TableCol 10 ColHeader CurvInd
 # TableCol 10 FieldName Intrinsic Curvature Index
 # TableCol 10 Units     unitless

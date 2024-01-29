@@ -43,10 +43,10 @@ the subject name. If the measure is thickness then the last column
 is the mean cortical thickness.
 
 The subjects list can be specified on either of two ways:
-  1. Specify each subject after a -s flag 
+  1. Specify each subject after a -s flag
 
             -s subject1 -s subject2 ... --hemi lh
-  
+
   2. Specify all subjects after --subjects flag. --subjects does not have
      to be the last argument. Eg:
 
@@ -66,25 +66,25 @@ be changed with '--meas measure', where measure can be area, volume
 thicknessstd is the standard dev of thickness across space.
 
 Example:
- aparcstats2table --hemi lh --subjects 004 008 --parc aparc.a2009s 
+ aparcstats2table --hemi lh --subjects 004 008 --parc aparc.a2009s
     --meas meancurv -t lh.a2009s.meancurv.txt
 
 lh.a2009s.meancurv.txt will have 3 rows: (1) 'header' with the name
 of each structure, (2) mean curvature for each structure for subject
 
-The --common-parcs flag writes only the ROIs which are common to all 
+The --common-parcs flag writes only the ROIs which are common to all
 the subjects. Default behavior is it puts 0.0 in the measure of an ROI
-which is not present in a subject. 
+which is not present in a subject.
 
 The --parcs-from-file <file> outputs only the parcs specified in the file
 The order of the parcs in the file is maintained. Specify one parcellation
 per line.
 
 The --report-rois flag, for each subject, gives what ROIs that are present
-in atleast one other subject is absent in current subject and also gives 
+in atleast one other subject is absent in current subject and also gives
 what ROIs are unique to the current subject.
 
-The --transpose flag writes the transpose of the table. 
+The --transpose flag writes the transpose of the table.
 This might be a useful way to see the table when the number of subjects is
 relatively less than the number of ROIs.
 
@@ -255,7 +255,7 @@ def options_parse() -> Any:
     options.parcs = None
     if options.parcsfile is not None:
         try:
-            f = open(options.parcsfile, "r")
+            f = open(options.parcsfile)
             options.parcs = [line.strip() for line in f]
         except OSError:
             print("ERROR: cannot read " + options.parcsfile)
@@ -332,7 +332,7 @@ def assemble_inputs(options: Any) -> Any:
 
 
 """
-Args: 
+Args:
     disorganized_table - the table is of the form (specifier, parc_measure_map)
     parcslist - list of parcellation names
     where parc_measure_map is a stable hashtable of keys parcellation names and values the measures.
@@ -363,7 +363,7 @@ def make_table2d(disorganized_table, parcslist):
 
 
 """
-Args: 
+Args:
     parsed options
     disorganized_table - the table is of the form (specifier, parc_measure_map)
     where parc_measure_map is a stable hashtable of keys parcellation names and values the measures.
@@ -414,7 +414,7 @@ def write_table(options, rows, cols, table):
     Write the table from memory to disk. Initialize the writer class.
     """
     tw = TableWriter(rows, cols, table)
-    r1c1 = "%s.%s.%s" % (options.hemi, options.parc, options.meas)
+    r1c1 = "{}.{}.{}".format(options.hemi, options.parc, options.meas)
     tw.assign_attributes(
         filename=options.outputfile,
         row1col1=r1c1,

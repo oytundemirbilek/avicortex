@@ -1,7 +1,11 @@
 """Freesurfer utilities necessary for aparcstats2table module."""
 from __future__ import annotations
 
+import logging
+import os
+import sys
 from typing import Any
+from warnings import warn as _warn
 
 
 # optparse can't handle variable number of arguments for an option.
@@ -21,10 +25,11 @@ def callback_var(option, opt_str, value, parser):
     setattr(parser.values, option.dest, value)
 
 
-def check_subjdirs():
+def check_subjdirs() -> str:
     """
-    Quit if SUBJECTS_DIR is not defined as an environment variable. This is not
-    a function which returns a boolean. Execution is stopped if not found.
+    Quit if SUBJECTS_DIR is not defined as an environment variable.
+
+    This is not a function which returns a boolean. Execution is stopped if not found.
     If found, returns the SUBJECTS_DIR
     """
     if "SUBJECTS_DIR" not in os.environ:
@@ -137,9 +142,6 @@ stored in a hidden list attribute) and replayed when iterating. A
 StableDict does NOT sort or organize the keys in any other way.
 """
 
-from typing import Any
-from warnings import warn as _warn
-
 
 # Helper metaclass-function.  Not exported by default but accessible
 # as StableDict.__metaclass__.
@@ -177,7 +179,7 @@ _WRNnoOrderKW = "StableDict created/updated with (unordered!) keyword arguments"
 #       protocol will change according to PEP3106. (However porting it
 #       to Python 3.X will not be much of an effort.)
 class StableDict(dict):
-    """Dictionary remembering insertion order
+    """Dictionary remembering insertion order.
 
     Order of item assignment is preserved and repeated when iterating
     over an instance.
@@ -187,7 +189,8 @@ class StableDict(dict):
     undefined. The same applies when initializing or updating with
     keyword arguments; i.e. keyword argument order is not preserved. A
     runtime warning will be issued in these cases via the
-    warnings.warn function."""
+    warnings.warn function.
+    """
 
     __metaclass__ = copy_baseclass_docs  # copy docstrings from base class
 
@@ -196,7 +199,7 @@ class StableDict(dict):
 
     # @staticmethod
     def is_ordered(dictInstance):
-        """Returns true if argument is known to be ordered."""
+        """Return true if argument is known to be ordered."""
         if isinstance(dictInstance, StableDict):
             return True
         try:  # len() may raise an exception.
@@ -216,10 +219,10 @@ class StableDict(dict):
             if hasattr(arg, "keys"):
                 if not self.is_ordered(arg):
                     _warn(_WRNnoOrderArg, RuntimeWarning, stacklevel=2)
-                super(StableDict, self).__init__(arg, **kw)
+                super().__init__(arg, **kw)
                 self.__ksl = list(arg.keys())
             else:  # Must be a sequence of 2-tuples.
-                super(StableDict, self).__init__(**kw)
+                super().__init__(**kw)
                 self.__ksl = []
                 for pair in arg:
                     if len(pair) != 2:
@@ -227,13 +230,13 @@ class StableDict(dict):
                     self.__setitem__(pair[0], pair[1])
                 if kw:
                     ksl = self.__ksl
-                    for k in super(StableDict, self).iterkeys():
+                    for k in super().iterkeys():
                         if k not in ksl:
                             ksl.append(k)
                     self.__ksl = ksl
         else:  # No positional argument given.
-            super(StableDict, self).__init__(**kw)
-            self.__ksl = list(super(StableDict, self).keys())
+            super().__init__(**kw)
+            self.__ksl = list(super().keys())
         if len(kw) > 1:
             # There have been additionial keyword arguments.
             # Since Python passes them in an (unordered) dict
@@ -249,7 +252,7 @@ class StableDict(dict):
             if hasattr(arg, "keys"):
                 if not self.is_ordered(arg):
                     _warn(_WRNnoOrderArg, RuntimeWarning, stacklevel=2)
-                super(StableDict, self).update(arg)
+                super().update(arg)
                 ksl = self.__ksl
                 for k in arg.keys():
                     if k not in ksl:
@@ -267,7 +270,7 @@ class StableDict(dict):
             # inspecting the source or byte code of the call).
             if len(kw) > 1:
                 _warn(_WRNnoOrderKW, RuntimeWarning, stacklevel=2)
-            super(StableDict, self).update(kw)
+            super().update(kw)
             ksl = self.__ksl
             for k in kw.iterkeys():
                 if k not in ksl:
@@ -282,7 +285,7 @@ class StableDict(dict):
 
         return (
             "StableDict({"
-            + ", ".join(["%r: %s" % (k, _repr(v)) for k, v in self.iteritems()])
+            + ", ".join(["{!r}: {}".format(k, _repr(v)) for k, v in self.iteritems()])
             + "})"
         )
 
@@ -295,24 +298,23 @@ class StableDict(dict):
 
         return (
             "StableDict(["
-            + ", ".join(["(%r, %s)" % (k, _repr(v)) for k, v in self.iteritems()])
+            + ", ".join(["({!r}, {})".format(k, _repr(v)) for k, v in self.iteritems()])
             + "])"
         )
 
     def __setitem__(self, key, value):
-        super(StableDict, self).__setitem__(key, value)
+        super().__setitem__(key, value)
         if key not in self.__ksl:
             self.__ksl.append(key)
 
     def __delitem__(self, key):
         if key in self.__ksl:
             self.__ksl.remove(key)
-        super(StableDict, self).__delitem__(key)
+        super().__delitem__(key)
 
     def __iter__(self):
         length = len(self)
-        for key in self.__ksl[:]:
-            yield key
+        yield from self.__ksl[:]
         if length != len(self):
             raise RuntimeError(_ERRsizeChanged)
 
@@ -344,10 +346,10 @@ class StableDict(dict):
 
     def clear(self) -> None:
         """"""
-        super(StableDict, self).clear()
+        super().clear()
         self.__ksl = []
 
-    def copy(self) -> "StableDict":
+    def copy(self) -> StableDict:
         """"""
         return StableDict(self)
 
@@ -355,11 +357,11 @@ class StableDict(dict):
         """"""
         if k in self.__ksl:
             self.__ksl.remove(k)
-        return super(StableDict, self).pop(k, *default)
+        return super().pop(k, *default)
 
     def popitem(self) -> Any:
         """"""
-        item = super(StableDict, self).popitem()
+        item = super().popitem()
         try:
             self.__ksl.remove(item[0])
         except:
@@ -414,11 +416,13 @@ class BadFileError(Exception):
 
 
 """
-This is the base class which parses the .stats files. 
+This is the base class which parses the .stats files.
 """
 
 
 class StatsParser:
+    """Base class for other stats parsers."""
+
     measure_column_map = {}  # to be defined in subclass
     fp = None  # filepointer
     include_structlist = None  # parse only these structs
@@ -430,7 +434,7 @@ class StatsParser:
 
     # constructor just needs a .stats filename
     # load it and report error
-    def __init__(self, filename):
+    def __init__(self, filename: str) -> None:
         self.filename = filename
         # raise exception if file doesn't exist or
         # is too small to be a valid stats file
@@ -438,7 +442,7 @@ class StatsParser:
             raise BadFileError(filename)
         if os.path.getsize(filename) < 10:
             raise BadFileError(filename)
-        self.fp = open(filename, "r")
+        self.fp = open(filename)
 
         self.include_structlist = []
         self.exclude_structlist = []
@@ -447,7 +451,7 @@ class StatsParser:
         self.include_vol_extras = 1
 
     # parse only the following structures
-    def parse_only(self, structlist):
+    def parse_only(self, structlist) -> None:
         # this is simply an Ordered Set
         # we need this because if inputs repeat, this will take care
         self.include_structlist = StableDict()
@@ -457,7 +461,7 @@ class StatsParser:
         self.measurelist = []
 
     # exclude the following structures
-    def exclude_structs(self, structlist):
+    def exclude_structs(self, structlist) -> None:
         # this is simply an Ordered Set
         # we need this because if inputs repeat, this will take care
         self.exclude_structlist = StableDict()
@@ -471,13 +475,13 @@ class StatsParser:
         pass
 
 
-"""
-?h.aparc*.stats parser ( or parser for similarly formatted .stats files )
-Derived from StatsParser
-"""
-
-
 class AparcStatsParser(StatsParser):
+    """
+    ?h.aparc*.stats parser ( or parser for similarly formatted .stats files ).
+
+    Derived from StatsParser
+    """
+
     # this is a map of measure requested and its corresponding column# in ?h.aparc*.stats
     measure_column_map = {
         "area": 2,
