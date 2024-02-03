@@ -47,8 +47,12 @@ def test_stats_collector() -> None:
     expected_path = os.path.join(
         FILE_PATH, "expected", "openneuro_baseline_dktatlas.csv"
     )
-    expected_df = pd.read_csv(expected_path)
-    stats_df = collector.collect_all()
+    expected_df = (
+        pd.read_csv(expected_path).sort_values(by="Subject ID").reset_index(drop=True)
+    )
+    stats_df = (
+        collector.collect_all().sort_values(by="Subject ID").reset_index(drop=True)
+    )
 
     assert not stats_df.isna().any().any(), "Some NaN values."
     assert len(stats_df) == len(expected_df)
@@ -57,9 +61,7 @@ def test_stats_collector() -> None:
     if UPDATE_GOLD_STANDARD:
         stats_df.to_csv(expected_path, index=False)
 
-    assert_frame_equal(
-        stats_df.sort_values(by="Subject ID"), expected_df.sort_values(by="Subject ID")
-    )
+    assert_frame_equal(stats_df, expected_df)
 
 
 def test_stats_collector_regions() -> None:

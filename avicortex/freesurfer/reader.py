@@ -80,9 +80,12 @@ class StatsCollector:
                 stats = stats.drop(["eTIV", "BrainSegVolNotVent"], axis=1)
             data_list.append(stats)
 
-        return pd.concat(data_list, axis=1, join="outer").reset_index(
-            names="Subject ID"
+        df = (
+            pd.concat(data_list, axis=1, join="outer")
+            .reset_index()
+            .rename(columns={"index": "Subject ID"})
         )
+        return df
 
     def collect_all(self) -> pd.DataFrame:
         """Collect all cortical attributes into one table."""
