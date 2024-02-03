@@ -82,6 +82,18 @@ Returns:
 """
 
 
+def format_column_names(columns: list[str], pretext: str, posttext: str) -> list[str]:
+    """Format column names."""
+    cols = []
+    for c in columns:
+        if c in {"eTIV", "BrainSegVolNotVent"}:
+            # For eTIV in aparc stats file
+            cols.append(c)
+        else:
+            cols.append(pretext + c + posttext)
+    return cols
+
+
 def sanitize_table(
     disorganized_table: list[tuple[str, dict[str, Any]]], commonparcflag: bool = True
 ) -> tuple[list[str], list[str], Ddict]:

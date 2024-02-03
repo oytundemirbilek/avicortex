@@ -130,7 +130,7 @@ def options_parse() -> Any:
     h_s = " subjectname"
     h_subf = "name of the file which has the list of subjects ( one subject per line)"
     h_qdec = "name of the qdec table which has the column of subjects ids (fsid)"
-    h_qdeclong = "name of the longitudinal qdec table which has the column of tp ids (fsid) and subject templates (fsid-base)"
+    h_qdeclong = "name of the longitudinal qdec table with column of tp ids (fsid) and subject templates (fsid-base)"
     h_hemi = "(REQUIRED) lh or rh"
     h_parc = "parcellation.. default is aparc ( alt aparc.a2009s)"
     h_meas = "measure: default is area ( alt volume, thickness, thicknessstd, meancurv, gauscurv, foldind, curvind)"
@@ -225,13 +225,12 @@ def options_parse() -> Any:
         default=False,
         help=h_v,
     )
-    (options, args) = parser.parse_args()
+    options, _ = parser.parse_args()
 
     # error check
-    if options.subjects is not None:
-        if len(options.subjects) < 1:
-            print("ERROR: at least 1 subject must be provided")
-            sys.exit(1)
+    if options.subjects is not None and len(options.subjects) < 1:
+        print("ERROR: at least 1 subject must be provided")
+        sys.exit(1)
 
     if (
         options.subjects is None

@@ -36,6 +36,16 @@ class Ddict(dict):
             self[key] = self.default()
         return dict.__getitem__(self, key)
 
+    def to_dict(self) -> dict[str, Any]:
+        """Convert class to dictionary and return."""
+        new_dict = {}
+        for k in self:
+            val = self[k]
+            if isinstance(self[k], dict):
+                val = self[k].to_dict()
+            new_dict[k] = val
+        return new_dict
+
 
 class StableDict(dict):
     """Dictionary remembering insertion order.
@@ -238,3 +248,10 @@ class StableDict(dict):
         except Exception as e:
             raise ValueError("cannot remove", item, self.__ksl, self) from e
         return item
+
+    def to_dict(self) -> dict[Any, Any]:
+        """Convert class to dictionary and return."""
+        new_dict = {}
+        for k in self:
+            new_dict[k] = self[k].to_dict() if isinstance(self[k], dict) else self[k]
+        return new_dict

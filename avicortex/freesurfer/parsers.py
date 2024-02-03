@@ -7,6 +7,10 @@ from avicortex.freesurfer.exceptions import BadFileError
 from avicortex.freesurfer.types import StableDict
 
 
+class StatsParserError(Exception):
+    """Raised when issues in StatsParser objects."""
+
+
 class StatsParser:
     """Base class for other stats parsers."""
 
@@ -30,7 +34,7 @@ class StatsParser:
             raise BadFileError(filename)
         if os.path.getsize(filename) < self.min_file_size:
             raise BadFileError(filename)
-        self.fp = open(filename)
+        self.fp = open(filename, encoding="utf-8")  # noqa: SIM115
 
         self.include_structlist = StableDict()
         self.exclude_structlist = StableDict()
@@ -55,11 +59,6 @@ class StatsParser:
             self.exclude_structlist[struct] = 1
         self.structlist = []
         self.measurelist = []
-
-    # actual parsing will be done by subclass
-    def parse(self, measure: str) -> dict[str, Any]:
-        """Parse the measurement."""
-        return {}
 
 
 class AparcStatsParser(StatsParser):
@@ -87,6 +86,8 @@ class AparcStatsParser(StatsParser):
     def parse(self, measure: str) -> dict[str, Any]:
         """Parse the measurement."""
         self.parc_measure_map = StableDict()
+        if self.fp is None:
+            raise StatsParserError("File pointer is not valid.")
         for line in self.fp:
             # a valid line is a line without a '#'
             if line.rfind("#") == -1:
