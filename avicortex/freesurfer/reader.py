@@ -1,5 +1,7 @@
 """Module to collect stats for all subjects in the target folder."""
 
+from __future__ import annotations
+
 import os
 
 import pandas as pd

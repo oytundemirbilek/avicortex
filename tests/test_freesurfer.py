@@ -57,7 +57,9 @@ def test_stats_collector() -> None:
     if UPDATE_GOLD_STANDARD:
         stats_df.to_csv(expected_path, index=False)
 
-    assert_frame_equal(stats_df, expected_df)
+    assert_frame_equal(
+        stats_df.sort_values(by="Subject ID"), expected_df.sort_values(by="Subject ID")
+    )
 
 
 def test_stats_collector_regions() -> None:

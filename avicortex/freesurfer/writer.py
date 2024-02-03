@@ -1,5 +1,7 @@
 """Module for write operations."""
 
+from __future__ import annotations
+
 from avicortex.freesurfer.types import Ddict
 
 
@@ -16,7 +18,7 @@ class TableWriter:
     filename - the filename to write to.
     """
 
-    def __init__(self, r: list[str], c: list[str], table: "Ddict") -> None:
+    def __init__(self, r: list[str], c: list[str], table: Ddict) -> None:
         self.rows = r
         self.columns = c
         self.table = table

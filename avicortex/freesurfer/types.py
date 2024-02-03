@@ -1,5 +1,7 @@
 """Module to define special data types for freesurfer."""
 
+from __future__ import annotations
+
 from typing import Any
 from warnings import warn as _warn
 
@@ -150,7 +152,7 @@ class StableDict(dict):
     def __str__(self) -> str:
         """Return string representation of the class."""
 
-        def _repr(x: "StableDict") -> str:
+        def _repr(x: StableDict) -> str:
             if x is self:
                 return "StableDict({...})"  # Avoid unbounded recursion.
             return repr(x)
@@ -164,7 +166,7 @@ class StableDict(dict):
     def __repr__(self) -> str:
         """Return string representation of the class."""
 
-        def _repr(x: "StableDict") -> str:
+        def _repr(x: StableDict) -> str:
             if x is self:
                 return "StableDict({...})"  # Avoid unbounded recursion.
             return repr(x)
@@ -231,7 +233,7 @@ class StableDict(dict):
         super().clear()
         self.__ksl = []
 
-    def copy(self) -> "StableDict":
+    def copy(self) -> StableDict:
         """Create a new object and return it."""
         return StableDict(self)
 
