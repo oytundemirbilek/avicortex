@@ -41,7 +41,8 @@ def make_table2d(
     """
     Reconstruct the stats as a matrix to prepare them to put into a table.
 
-    Args:
+    Parameters
+    ----------
         disorganized_table - the table is of the form (specifier, parc_measure_map)
         parcslist - list of parcellation names
         where parc_measure_map is a stable hashtable of keys parcellation names and values the measures.
@@ -49,7 +50,9 @@ def make_table2d(
         specifiers.
         parcellations present in parcslist are the only parcellations which go in the table.
         if any specifier doesn't have a parcellation, the measure is 0.0
-    Returns:
+
+    Returns
+    -------
         rows - list of specifiers ( subjects)
         columns - list of parcellation names
         table - a stable 2d table of size len(rows) x len(columns)

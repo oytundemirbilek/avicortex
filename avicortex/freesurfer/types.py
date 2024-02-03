@@ -22,7 +22,7 @@ class Ddict(dict):
     >>> tb['bert']['putamen'] = .05
     >>> tb['bert']['caudate'] = 1.6
     >>> tb['fsaverage']['putamen'] = 2.2
-    >>> car_details
+    >>> tb
     {'fsaverage': {'putamen': 2.2}, 'bert': {'putamen': 0.05, 'caudate':
         1.6}}
     """
@@ -80,7 +80,8 @@ class StableDict(dict):
                 super().__init__(**kwargs)
                 self.__ksl = []
                 for pair in first_arg:
-                    if len(pair) != 2:
+                    # Not necessary to parameterize this.
+                    if len(pair) != 2:  # noqa: PLR2004
                         raise ValueError("not a 2-tuple", pair)
                     self.__setitem__(pair[0], pair[1])
                 if kwargs:

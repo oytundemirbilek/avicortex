@@ -102,9 +102,10 @@ def callback_var(option: Any, opt_str: Any, value: Any, parser: Any) -> None:
     """Allow callback to handle variable number of arguments for an option instead of optparse."""
     value = []
     rargs = parser.rargs
+    idx_arg = 2
     while rargs:
         arg = rargs[0]
-        if (arg[:2] == "--" and len(arg) > 2) or (
+        if (arg[:idx_arg] == "--" and len(arg) > idx_arg) or (
             arg[:1] == "-" and len(arg) > 1 and arg[1] != "-"
         ):
             break
@@ -114,7 +115,70 @@ def callback_var(option: Any, opt_str: Any, value: Any, parser: Any) -> None:
     setattr(parser.values, option.dest, value)
 
 
-def options_parse() -> Any:
+def check_subjdirs() -> str:
+    """
+    Quit if SUBJECTS_DIR is not defined as an environment variable.
+
+    This is not a function which returns a boolean. Execution is stopped if not found.
+    If found, returns the SUBJECTS_DIR
+    """
+    if "SUBJECTS_DIR" not in os.environ:
+        logging.info("ERROR: SUBJECTS_DIR environment variable not defined!")
+        sys.exit(1)
+    return os.environ["SUBJECTS_DIR"]
+
+
+def sanity_check(options: Any) -> None:
+    """Check if inputs make sense."""
+    if options.subjects is not None and len(options.subjects) < 1:
+        logging.info("ERROR: at least 1 subject must be provided")
+        sys.exit(1)
+
+    if (
+        options.subjects is None
+        and options.subjectsfile is None
+        and options.qdec is None
+        and options.qdeclong is None
+    ):
+        logging.info(
+            "ERROR: Specify one of --subjects, --subjectsfile --qdec or --qdec-long"
+        )
+        logging.info("       or run with --help for help.")
+        sys.exit(1)
+
+    count = 0
+    if options.subjects is not None:
+        count = count + 1
+    if options.subjectsfile is not None:
+        count = count + 1
+    if options.qdec is not None:
+        count = count + 1
+    if options.qdeclong is not None:
+        count = count + 1
+    if count > 1:
+        logging.info(
+            "ERROR: Please specify just one of  --subjects, --subjectsfile --qdec or --qdec-long."
+        )
+        sys.exit(1)
+
+    if not options.outputfile:
+        logging.info("ERROR: output table name should be specified")
+        sys.exit(1)
+    if not options.hemi:
+        logging.info("ERROR: hemisphere should be provided (lh or rh)")
+        sys.exit(1)
+
+    # parse the parcs file
+    options.parcs = None
+    if options.parcsfile is not None:
+        try:
+            with open(options.parcsfile, encoding="utf-8") as fp:
+                options.parcs = [line.strip() for line in fp]
+        except OSError:
+            logging.info("ERROR: cannot read " + options.parcsfile)
+
+
+def options_parse() -> Any:  # noqa: PLR0914
     """
     Command Line Options Parser for aparcstats2table.
 
@@ -140,7 +204,7 @@ def options_parse() -> Any:
     h_parcid = "do not pre/append hemi/meas to parcellation name"
     h_common = "output only the common parcellations of all the subjects given"
     h_parcfile = "filename: output parcellations specified in the file"
-    h_roi = "print ROIs information for each subject"
+    h_roi = "logging.info ROIs information for each subject"
     h_tr = "transpose the table ( default is subjects in rows and ROIs in cols)"
     h_v = "increase verbosity"
 
@@ -227,54 +291,10 @@ def options_parse() -> Any:
     )
     options, _ = parser.parse_args()
 
-    # error check
-    if options.subjects is not None and len(options.subjects) < 1:
-        print("ERROR: at least 1 subject must be provided")
-        sys.exit(1)
-
-    if (
-        options.subjects is None
-        and options.subjectsfile is None
-        and options.qdec is None
-        and options.qdeclong is None
-    ):
-        print("ERROR: Specify one of --subjects, --subjectsfile --qdec or --qdec-long")
-        print("       or run with --help for help.")
-        sys.exit(1)
-
-    count = 0
-    if options.subjects is not None:
-        count = count + 1
-    if options.subjectsfile is not None:
-        count = count + 1
-    if options.qdec is not None:
-        count = count + 1
-    if options.qdeclong is not None:
-        count = count + 1
-    if count > 1:
-        print(
-            "ERROR: Please specify just one of  --subjects, --subjectsfile --qdec or --qdec-long."
-        )
-        sys.exit(1)
-
-    if not options.outputfile:
-        print("ERROR: output table name should be specified")
-        sys.exit(1)
-    if not options.hemi:
-        print("ERROR: hemisphere should be provided (lh or rh)")
-        sys.exit(1)
-
-    # parse the parcs file
-    options.parcs = None
-    if options.parcsfile is not None:
-        try:
-            f = open(options.parcsfile)
-            options.parcs = [line.strip() for line in f]
-        except OSError:
-            print("ERROR: cannot read " + options.parcsfile)
+    sanity_check(options)
 
     if options.reportroiflag:
-        print("WARNING: --report-rois deprecated. Use -v instead")
+        logging.info("WARNING: --report-rois deprecated. Use -v instead")
 
     if options.verboseflag:
         aparclogger.setLevel(logging.DEBUG)
@@ -286,24 +306,28 @@ def assemble_inputs(options: Any) -> Any:
     """
     Organize inputs.
 
-    Args:
+    Parameters
+    ----------
         the parsed 'options'
-    Returns:
+
+    Returns
+    -------
         a list of tuples of (specifier names ( subjects), path to the corresponding .stats files)
     """
     o = options
     specs_paths = []
     # check the subjects dir
-    # subjdir = check_subjdirs()
-    # print("SUBJECTS_DIR :" % subjdir)
+    subjdir = check_subjdirs()
+    logging.info("SUBJECTS_DIR :" % subjdir)
     # in case the user gave --subjectsfile argument
     if o.subjectsfile is not None:
         o.subjects = []
         try:
-            sf = open(o.subjectsfile)
-            [o.subjects.append(subfromfile.strip()) for subfromfile in sf]
+            with open(o.subjectsfile, encoding="utf-8") as fp:
+                for subfromfile in fp:
+                    o.subjects.append(subfromfile.strip())
         except OSError:
-            print(f"ERROR: the file {o.subjectsfile} does not exist")
+            logging.info(f"ERROR: the file {o.subjectsfile} does not exist")
             sys.exit(1)
     if o.qdec is not None:
         o.subjects = []
@@ -317,9 +341,9 @@ def assemble_inputs(options: Any) -> Any:
                     fsid = row["fsid"].strip()
                     if fsid[0] != "#":
                         o.subjects.append(fsid)
-                print(o.subjects)
+                logging.info(o.subjects)
         except OSError:
-            print(f"ERROR: the file {o.qdec} does not exist")
+            logging.info(f"ERROR: the file {o.qdec} does not exist")
             sys.exit(1)
     if o.qdeclong is not None:
         o.subjects = []
@@ -334,7 +358,7 @@ def assemble_inputs(options: Any) -> Any:
                     if fsid[0] != "#":
                         o.subjects.append(fsid + ".long." + row["fsid-base"].strip())
         except OSError:
-            print(f"ERROR: the file {o.qdeclong} does not exist")
+            logging.info(f"ERROR: the file {o.qdeclong} does not exist")
             sys.exit(1)
 
     for sub in o.subjects:
@@ -378,7 +402,7 @@ def main() -> None:
     pretable = []
 
     # Parse the parc.stats files
-    print("Parsing the .stats files")
+    logging.info("Parsing the .stats files")
     for specifier, filepath in subj_listoftuples:
         try:
             aparclogger.debug("-" * 20)
@@ -393,26 +417,26 @@ def main() -> None:
             aparclogger.debug(parc_measure_map)
         except BadFileError as e:
             if options.skipflag:
-                print("Skipping " + str(e))
+                logging.info("Skipping " + str(e))
                 continue
             else:
-                print(
+                logging.info(
                     "ERROR: The stats file "
                     + str(e)
                     + " is not found or is too small to be a valid statsfile"
                 )
-                print("Use --skip flag to automatically skip bad stats files")
+                logging.info("Use --skip flag to automatically skip bad stats files")
                 sys.exit(1)
 
         pretable.append((specifier, parc_measure_map))
 
     # Make sure the table has the same number of cols for all stats files
     # and merge them up, clean them up etc. More in the documentation of the fn.
-    print("Building the table..")
+    logging.info("Building the table..")
     rows, columns, table = sanitize_table(pretable, options.commonparcflag)
 
     # Write this table ( in memory ) to disk.. function uses TableWriter class
-    print(f"Writing the table to {options.outputfile}")
+    logging.info(f"Writing the table to {options.outputfile}")
     write_table(options, rows, columns, table)
 
     # always exit with 0 exit code

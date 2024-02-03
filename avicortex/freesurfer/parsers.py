@@ -102,11 +102,7 @@ class AparcStatsParser(StatsParser):
         if self.include_structlist:
             tmp_parc_measure_map = StableDict()
             for oparc in self.include_structlist:
-                parclist = self.parc_measure_map.keys()
-                if oparc in parclist:
-                    tmp_parc_measure_map[oparc] = self.parc_measure_map[oparc]
-                else:
-                    tmp_parc_measure_map[oparc] = 0.0
+                tmp_parc_measure_map[oparc] = self.parc_measure_map.get(oparc, 0.0)
             self.parc_measure_map = tmp_parc_measure_map
 
         # measures which are found at the beginning of files.
