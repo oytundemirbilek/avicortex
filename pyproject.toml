@@ -99,7 +99,7 @@ verbose = false
 
 [tool.mypy]
 verbosity = 0
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 warn_unused_configs = true
 warn_no_return = true
