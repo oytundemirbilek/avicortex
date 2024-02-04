@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Generator
 from typing import Any
 from warnings import warn as _warn
-
-from _collections_abc import Generator, dict_items, dict_keys, dict_values
 
 from avicortex.freesurfer.exceptions import (
     _ERRsizeChanged,
@@ -88,7 +87,7 @@ class StableDict(dict):
                     self.__setitem__(pair[0], pair[1])
                 if kwargs:
                     ksl = self.__ksl
-                    for k in super().iterkeys():
+                    for k in iter(super().keys()):
                         if k not in ksl:
                             ksl.append(k)
                     self.__ksl = ksl
@@ -103,7 +102,7 @@ class StableDict(dict):
             _warn(_WRNnoOrderKW, RuntimeWarning, stacklevel=2)
 
     @staticmethod
-    def is_ordered(dict_instance: dict) -> bool:
+    def is_ordered(dict_instance: tuple) -> bool:
         """Return true if argument is known to be ordered."""
         if isinstance(dict_instance, StableDict):
             return True
@@ -144,7 +143,7 @@ class StableDict(dict):
                 _warn(_WRNnoOrderKW, RuntimeWarning, stacklevel=2)
             super().update(kwargs)
             ksl = self.__ksl
-            for k in kwargs.iterkeys():
+            for k in iter(kwargs.keys()):
                 if k not in ksl:
                     ksl.append(k)
             self.__ksl = ksl
@@ -159,7 +158,7 @@ class StableDict(dict):
 
         return (
             "StableDict({"
-            + ", ".join([f"{k!r}: {_repr(v)}" for k, v in self.iteritems()])
+            + ", ".join([f"{k!r}: {_repr(v)}" for k, v in self.items()])
             + "})"
         )
 
@@ -173,7 +172,7 @@ class StableDict(dict):
 
         return (
             "StableDict(["
-            + ", ".join([f"({k!r}, {_repr(v)})" for k, v in self.iteritems()])
+            + ", ".join([f"({k!r}, {_repr(v)})" for k, v in self.items()])
             + "])"
         )
 
@@ -189,42 +188,10 @@ class StableDict(dict):
             self.__ksl.remove(key)
         super().__delitem__(key)
 
-    def __iter__(self) -> Generator[list[Any], None, None]:
+    def __iter__(self) -> Generator[str, None, None]:
         """Grab next item in the class."""
         length = len(self)
         yield from self.__ksl[:]
-        if length != len(self):
-            raise RuntimeError(_ERRsizeChanged)
-
-    def keys(self) -> dict_keys:
-        """Return list of keys."""
-        return self.__ksl[:]
-
-    def iterkeys(self) -> Generator[list[Any], None, None]:
-        """Grab next item in the class."""
-        return iter(self)
-
-    def values(self) -> dict_values:
-        """Return values."""
-        return [self[k] for k in self.__ksl]
-
-    def itervalues(self) -> Generator[Any, None, None]:
-        """Get next value."""
-        length = len(self)
-        for key in self.__ksl[:]:
-            yield self[key]
-        if length != len(self):
-            raise RuntimeError(_ERRsizeChanged)
-
-    def items(self) -> dict_items:
-        """Get all key-value pairs."""
-        return [(k, self[k]) for k in self.__ksl]
-
-    def iteritems(self) -> Generator[tuple[str, Any], None, None]:
-        """Yield all key-value pairs."""
-        length = len(self)
-        for key in self.__ksl[:]:
-            yield (key, self[key])
         if length != len(self):
             raise RuntimeError(_ERRsizeChanged)
 

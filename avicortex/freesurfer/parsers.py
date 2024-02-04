@@ -21,8 +21,8 @@ class StatsParser:
     include_structlist = None  # parse only these structs
     exclude_structlist = None  # exclude these structs
 
-    structlist = None  # list of structures
-    measurelist = None  # list of measures corresponding to the structures
+    structlist: list[str] | None = None  # list of structures
+    measurelist: list[str] | None = None  # list of measures per structure
     # len ( structlist ) must be equal to len (measurelist )
 
     # constructor just needs a .stats filename
@@ -40,8 +40,8 @@ class StatsParser:
 
         self.include_structlist = StableDict()
         self.exclude_structlist = StableDict()
-        self.structlist: list[str] = []
-        self.measurelist: list[str] = []
+        self.structlist = []
+        self.measurelist = []
         self.include_vol_extras = 1
 
     # parse only the following structures
@@ -85,7 +85,7 @@ class AparcStatsParser(StatsParser):
     parc_measure_map = StableDict()
 
     # we take in the measure we need..
-    def parse(self, measure: str) -> dict[str, Any]:
+    def parse(self, measure: str) -> dict[str, Any]:  # noqa: C901
         """Parse the measurement."""
         self.parc_measure_map = StableDict()
         if self.fp is None:

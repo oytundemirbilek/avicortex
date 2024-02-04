@@ -302,7 +302,7 @@ def options_parse() -> Any:  # noqa: PLR0914
     return options
 
 
-def assemble_inputs(options: Any) -> Any:
+def assemble_inputs(options: Any) -> Any:  # noqa: C901
     """
     Organize inputs.
 
@@ -318,7 +318,7 @@ def assemble_inputs(options: Any) -> Any:
     specs_paths = []
     # check the subjects dir
     subjdir = check_subjdirs()
-    logging.info("SUBJECTS_DIR :" % subjdir)
+    logging.info(subjdir)
     # in case the user gave --subjectsfile argument
     if o.subjectsfile is not None:
         o.subjects = []
@@ -332,7 +332,7 @@ def assemble_inputs(options: Any) -> Any:
     if o.qdec is not None:
         o.subjects = []
         try:
-            with open(o.qdec, "rb") as f:
+            with open(o.qdec, encoding="utf-8") as f:
                 dialect = csv.Sniffer().sniff(f.read(1024))
                 f.seek(0)
                 reader = csv.DictReader(f, dialect=dialect)
@@ -348,7 +348,7 @@ def assemble_inputs(options: Any) -> Any:
     if o.qdeclong is not None:
         o.subjects = []
         try:
-            with open(o.qdeclong, "rb") as f:
+            with open(o.qdeclong, encoding="utf-8") as f:
                 dialect = csv.Sniffer().sniff(f.read(1024))
                 f.seek(0)
                 reader = csv.DictReader(f, dialect=dialect)
@@ -387,7 +387,7 @@ def write_table(options: Any, rows: list[Any], cols: Any, table: Ddict) -> None:
 
 
 def main() -> None:
-    """Define main entrpoint for the CLI."""
+    """Define main entrypoint for the CLI."""
     # Command Line options are error checking done here
     options = options_parse()
     aparclogger.debug("-- The options you entered --")

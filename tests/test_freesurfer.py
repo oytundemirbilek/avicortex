@@ -7,6 +7,7 @@ from pandas.testing import assert_frame_equal
 
 from avicortex.freesurfer.parsers import AparcStatsParser
 from avicortex.freesurfer.reader import StatsCollector
+from avicortex.freesurfer.types import StableDict
 
 FILE_PATH = os.path.dirname(__file__)
 UPDATE_GOLD_STANDARD = False
@@ -14,6 +15,26 @@ UPDATE_GOLD_STANDARD = False
 
 def test_stable_dict() -> None:
     """Test whether the StableDict class works properly."""
+    sdict = StableDict()
+    sdict["mock_key1"] = 1.0
+    assert "mock_key1" in sdict
+
+    sdict["mock_key0"] = 2.0
+    sdict["mock_key3"] = 2.0
+    sdict["mock_key2"] = 2.0
+    assert list(sdict.keys())[0] == "mock_key1"
+    assert list(sdict.keys())[1] == "mock_key0"
+
+    dict_repr = sdict.to_dict()
+    assert isinstance(dict_repr, dict)
+    assert not isinstance(dict_repr, StableDict)
+    assert "mock_key1" in dict_repr
+    assert dict_repr["mock_key1"] == 1.0
+
+    other_dict = {"mock_key1": 10.0, "mock_key10": 1.0}
+    sdict.update(other_dict)
+    assert "mock_key10" in sdict
+    assert sdict["mock_key1"] == 10.0
 
 
 def test_aparc_stats_read() -> None:
