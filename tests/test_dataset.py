@@ -1,4 +1,5 @@
 """Test graph dataset classes."""
+
 import torch
 from torch_geometric.loader import DataLoader as PygDataLoader
 
