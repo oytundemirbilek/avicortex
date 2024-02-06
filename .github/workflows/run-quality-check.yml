@@ -25,10 +25,10 @@ jobs:
 
       - name: Cache dependencies
         uses: actions/cache@v4
-        id: cache
+        id: cache-venv
         with:
           path: ${{ github.workspace }}
-          key: precommit-${{ hashFiles('**/pyproject.toml') }}
+          key: precommit-${{ hashFiles('pyproject.toml') }}
 
       - uses: actions/checkout@v4
       - name: Set up Python 3.10
@@ -37,6 +37,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: make dependencies_lint
 
       - name: Run precommit
