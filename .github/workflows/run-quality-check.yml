@@ -34,7 +34,7 @@ jobs:
         id: cache-venv
         with:
           path: ${{ env.pythonLocation }}
-          key: cache-venv-${{ hashFiles('pyproject.toml') }}
+          key: cache-venv-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: cache-venv-
 
       - name: Cache precommit
