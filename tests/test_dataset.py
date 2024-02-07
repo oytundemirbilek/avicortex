@@ -140,6 +140,65 @@ def test_cross_validation() -> None:
     assert len(test_ids.intersection(val_ids)) == 0
 
 
+def test_data_split_ratios() -> None:
+    """Test if different data split combinations work properly."""
+    tr_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="train",
+        data_split_ratio=(9, 1, 5),
+    )
+    val_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="validation",
+        data_split_ratio=(9, 1, 5),
+    )
+    test_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="test",
+        data_split_ratio=(9, 1, 5),
+    )
+    assert tr_dataset.n_subj == 25
+    assert val_dataset.n_subj == 3
+    assert test_dataset.n_subj == 14
+
+    # All test set
+    test_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="test",
+        data_split_ratio=(0, 0, 1),
+    )
+    assert test_dataset.n_subj == 42
+
+    # No test set
+    tr_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="train",
+        data_split_ratio=(4, 1, 0),
+    )
+    assert tr_dataset.n_subj == 33
+
+    val_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="validation",
+        data_split_ratio=(4, 1, 0),
+    )
+    assert val_dataset.n_subj == 9
+
+    test_dataset = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        mode="test",
+        data_split_ratio=(4, 1, 0),
+    )
+    assert test_dataset.n_subj == 0
+
+
 def test_view_selection() -> None:
     """Test if view selection works correctly."""
     n_views = 5

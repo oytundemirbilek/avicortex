@@ -54,19 +54,24 @@ class GraphDataset(Dataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         gbuilder: GraphBuilder,
         mode: str = "inference",
-        n_folds: int = 5,
+        n_folds: int | None = None,
         current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
         super().__init__()
+        if n_folds is not None:
+            raise DeprecationWarning(
+                "n_folds is deprecated, use train-validation-test splits with data_split_ratio=(4,1,5) instead."
+            )
         if hemisphere not in {"left", "right"}:
             raise ValueError("Hemisphere should be 'left' or 'right'.")
         self.mode = mode
@@ -75,11 +80,14 @@ class GraphDataset(Dataset):
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.device = device
         self.random_seed = random_seed
+        if data_split_ratio[1] > 1:
+            raise ValueError("Validation split should be 1. Define others based on it.")
 
-        self.n_folds = n_folds
+        self.n_folds = data_split_ratio[0] + data_split_ratio[1]
         self.in_view_idx = in_view_idx
         self.out_view_idx = out_view_idx
         self.current_fold = current_fold
+        self.data_split_ratio = data_split_ratio
         self.gbuilder = gbuilder
         self.subjects_labels = self.gbuilder.get_labels()
         self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
@@ -89,12 +97,30 @@ class GraphDataset(Dataset):
         self.subjects_nodes = self.subjects_nodes.transpose((1, 0, 2))
         self.subjects_edges = self.subjects_edges.transpose((2, 0, 1, 3))
 
-        # Keep half of the data as 'unseen' to be used in inference.
-        self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
-            self.subjects_ids.shape[0], 2, 0
-        )
+        if data_split_ratio[2] > 0:
+            self.test_folds = (
+                data_split_ratio[0] + data_split_ratio[1] + data_split_ratio[2]
+            ) // data_split_ratio[2]
+        else:
+            self.test_folds = 0
 
-        if mode in {"train", "validation"}:
+        if self.test_folds > 1:
+            # Keep partition of the data as 'unseen' to be used as test split.
+            self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
+                self.subjects_ids.shape[0], self.test_folds, 0
+            )
+        elif self.test_folds == 1:
+            self.seen_data_indices = np.array([], dtype=np.int32)
+            self.unseen_data_indices = np.arange(
+                self.subjects_ids.shape[0], dtype=np.int32
+            )
+        elif self.test_folds == 0:
+            self.unseen_data_indices = np.array([], dtype=np.int32)
+            self.seen_data_indices = np.arange(
+                self.subjects_ids.shape[0], dtype=np.int32
+            )
+
+        if self.mode in {"train", "validation"}:
             self.seen_subjects_labels = self.subjects_labels[self.seen_data_indices]
             self.seen_subjects_nodes = self.subjects_nodes[self.seen_data_indices]
             self.seen_subjects_edges = self.subjects_edges[self.seen_data_indices]
@@ -106,22 +132,22 @@ class GraphDataset(Dataset):
                 self.current_fold,
             )
 
-        if mode == "train":
+        if self.mode == "train":
             self.subjects_labels = self.seen_subjects_labels[self.tr_indices]
             self.subjects_nodes = self.seen_subjects_nodes[self.tr_indices]
             self.subjects_edges = self.seen_subjects_edges[self.tr_indices]
             self.subjects_ids = self.seen_subjects_ids[self.tr_indices]
-        elif mode == "validation":
+        elif self.mode == "validation":
             self.subjects_labels = self.seen_subjects_labels[self.val_indices]
             self.subjects_nodes = self.seen_subjects_nodes[self.val_indices]
             self.subjects_edges = self.seen_subjects_edges[self.val_indices]
             self.subjects_ids = self.seen_subjects_ids[self.val_indices]
-        elif mode == "test":
+        elif self.mode == "test":
             self.subjects_labels = self.subjects_labels[self.unseen_data_indices]
             self.subjects_nodes = self.subjects_nodes[self.unseen_data_indices]
             self.subjects_edges = self.subjects_edges[self.unseen_data_indices]
             self.subjects_ids = self.subjects_ids[self.unseen_data_indices]
-        elif mode == "inference":
+        elif self.mode == "inference":
             pass
         else:
             raise ValueError(
@@ -331,8 +357,9 @@ class HCPYoungAdultDataset(GraphDataset):
         hemisphere: str,
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
-        n_folds: int = 5,
+        n_folds: int | None = None,
         current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
     ):
@@ -344,6 +371,7 @@ class HCPYoungAdultDataset(GraphDataset):
             mode,
             n_folds,
             current_fold,
+            data_split_ratio,
             in_view_idx,
             out_view_idx,
         )
@@ -386,8 +414,9 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
         timepoint: str | None = None,
-        n_folds: int = 5,
+        n_folds: int | None = None,
         current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
     ):
@@ -415,6 +444,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
             mode,
             n_folds,
             current_fold,
+            data_split_ratio,
             in_view_idx,
             out_view_idx,
         )
@@ -455,8 +485,9 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         hemisphere: str,
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
-        n_folds: int = 5,
+        n_folds: int | None = None,
         current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
     ):
@@ -470,6 +501,7 @@ class CandiShareSchizophreniaDataset(GraphDataset):
             mode,
             n_folds,
             current_fold,
+            data_split_ratio,
             in_view_idx,
             out_view_idx,
         )
