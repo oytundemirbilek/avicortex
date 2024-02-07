@@ -4,10 +4,7 @@ venv: .venv/bin/activate
 
 .ONESHELL:
 .venv/bin/activate:
-	if [ ! -d ".venv" ]; then
-		echo "Venv does not exist, creating a new one."
-		python -m venv .venv
-	fi
+	python -m venv .venv
 	source .venv/bin/activate
 	python -m pip install --upgrade pip
 
