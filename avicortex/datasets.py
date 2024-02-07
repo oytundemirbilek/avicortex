@@ -54,11 +54,12 @@ class GraphDataset(Dataset):
 
     """
 
-    def __init__(  # noqa: PLR0915
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         gbuilder: GraphBuilder,
         mode: str = "inference",
+        n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
@@ -67,6 +68,10 @@ class GraphDataset(Dataset):
         random_seed: int = 0,
     ):
         super().__init__()
+        if n_folds is not None:
+            raise DeprecationWarning(
+                "n_folds is deprecated, use train-validation-test splits with data_split_ratio=(4,1,5) instead."
+            )
         if hemisphere not in {"left", "right"}:
             raise ValueError("Hemisphere should be 'left' or 'right'.")
         self.mode = mode
@@ -352,6 +357,7 @@ class HCPYoungAdultDataset(GraphDataset):
         hemisphere: str,
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
+        n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
@@ -363,6 +369,7 @@ class HCPYoungAdultDataset(GraphDataset):
             hemisphere,
             HCPGraphBuilder(freesurfer_out_path),
             mode,
+            n_folds,
             current_fold,
             data_split_ratio,
             in_view_idx,
@@ -407,6 +414,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
         timepoint: str | None = None,
+        n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
@@ -434,6 +442,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
             hemisphere,
             OpenNeuroGraphBuilder(freesurfer_out_path, include_all),
             mode,
+            n_folds,
             current_fold,
             data_split_ratio,
             in_view_idx,
@@ -476,6 +485,7 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         hemisphere: str,
         freesurfer_out_path: str | None = None,
         mode: str = "inference",
+        n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
@@ -489,6 +499,7 @@ class CandiShareSchizophreniaDataset(GraphDataset):
             hemisphere,
             CandiShareGraphBuilder(freesurfer_out_path),
             mode,
+            n_folds,
             current_fold,
             data_split_ratio,
             in_view_idx,
