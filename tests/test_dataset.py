@@ -1,9 +1,13 @@
 """Test graph dataset classes."""
 
+import os
+
 import torch
 from torch_geometric.loader import DataLoader as PygDataLoader
 
-from avicortex.datasets import OpenNeuroCannabisUsersDataset
+from avicortex.datasets import ADNIAlzheimersDataset, OpenNeuroCannabisUsersDataset
+
+DATA_PATH = os.path.join(os.path.dirname(__file__), "mock_datasets")
 
 
 def test_simple_iteration() -> None:
@@ -228,3 +232,22 @@ def test_view_selection() -> None:
     assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, 1)
     assert not torch.equal(src_graph.x, tgt_graph.x)
     assert not torch.equal(src_graph.edge_attr, tgt_graph.edge_attr)
+
+
+def test_adni_dataset() -> None:
+    """Test if ADNI dataset works correctly."""
+    n_views = 3
+    n_samples = 3
+    n_nodes = 34
+    tr_dataset = ADNIAlzheimersDataset(
+        hemisphere="left",
+        freesurfer_out_path=os.path.join(DATA_PATH, "adni", "adni_mock.csv"),
+    )
+    assert len(tr_dataset) == n_samples
+    tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
+    src_graph, tgt_graph = next(iter(tr_dataloader))
+
+    assert src_graph.x.shape == (1, n_nodes, n_views)
+    assert src_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+    assert tgt_graph.x.shape == (1, n_nodes, n_views)
+    assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)

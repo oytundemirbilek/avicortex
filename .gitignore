@@ -157,6 +157,9 @@ logs
 .ruff_cache
 .vscode
 
+# Ignore privately added data.
+.data/
+
 docs/
 
 # PyCharm

@@ -12,6 +12,7 @@ from torch.utils.data import Dataset
 from torch_geometric.data import Data as PygData
 
 from avicortex.builders import (
+    ADNIGraphBuilder,
     CandiShareGraphBuilder,
     GraphBuilder,
     HCPGraphBuilder,
@@ -507,21 +508,61 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         )
 
 
-# class ADNIAlzheimersDataset(GraphDataset):
-#     """
-#     ADNI Alzheimers Disease / Late Mild Cognitive Impairment Dataset:
-#     - 2 classes (ad / lmci)
-#     - 67 subjects
-#     - 35 nodes
-#     - 4 views
-#     - 2 timepoints
-#     """
+class ADNIAlzheimersDataset(GraphDataset):
+    """
+    Class to handle Alzheimers Disease Neuroimaging Initiative (ADNI) dataset specificities.
 
-#     def __init__(self):
-#         super().__init__()
+    This dataset has 2 scans per subject:
+    - 2 classes (not user / cannabis user)
+    - ... subjects
+    - 34 nodes
+    - 4 views
 
-#     def __getitem__(self, index):
-#         return
+    Examples
+    --------
+    Data loading with batches:
 
-#     def __len__(self):
-#         return
+    >>> from torch_geometric.loader import DenseDataLoader as PygDataLoader
+    >>> tr_dataset = OpenNeuroCannabisUsersDataset(hemisphere="left", mode="train", timepoint="baseline")
+    >>> tr_dataloader = PygDataLoader(tr_dataset, batch_size=5)
+    >>> for g in tr_dataloader:
+    ...     print(g)
+
+    Data loading without batching (no batch dimension):
+
+    >>> from torch_geometric.loader import DataLoader as PygDataLoader
+    >>> tr_dataset = OpenNeuroCannabisUsersDataset(hemisphere="left", mode="train", timepoint="followup")
+    >>> tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
+    >>> for g in tr_dataloader:
+    ...     print(g)
+
+    """
+
+    def __init__(
+        self,
+        hemisphere: str,
+        freesurfer_out_path: str | None = None,
+        freesurfer_regions_path: str | None = None,
+        mode: str = "inference",
+        n_folds: int | None = None,
+        current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
+        in_view_idx: int | None = None,
+        out_view_idx: int | None = None,
+    ) -> None:
+        if freesurfer_out_path is None:
+            freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
+        if freesurfer_regions_path is None:
+            freesurfer_regions_path = os.path.join(
+                DATA_PATH, "adni3_region_mapping.csv"
+            )
+        super().__init__(
+            hemisphere,
+            ADNIGraphBuilder(freesurfer_out_path, freesurfer_regions_path),
+            mode,
+            n_folds,
+            current_fold,
+            data_split_ratio,
+            in_view_idx,
+            out_view_idx,
+        )
