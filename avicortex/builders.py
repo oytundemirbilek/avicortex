@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -31,11 +32,16 @@ class GraphBuilder:
         self.region_name_pos_in_pattern = 1
         # All regions defined in DKT-Atlas
         regions_path = os.path.join(ROOT_PATH, "data", "region_names.csv")
-        self.dkt_regions = pd.read_csv(regions_path)["Alias_HCP"]
+        self.region_names_column = "Alias_HCP"
+        self.dkt_regions = self.get_regions(regions_path)
         # Define view names to look for.
         self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
+
+    def get_regions(self, path: str) -> pd.Series:
+        """Get a list of cortical regions."""
+        return pd.read_csv(path)[self.region_names_column]
 
     def check_regions(self, single_view: pd.DataFrame) -> list[str]:
         """
@@ -155,7 +161,7 @@ class GraphBuilder:
         all_views = []
         for view in self.views:
             # Find all columns related to the view:
-            pattern = self.column_pattern.format(hemisphere, view)
+            pattern = self.build_column_pattern(hemisphere, view)
             df_single_view = self.freesurfer_df.filter(regex=pattern)
             # Check for erroneous columns that does not indicate a DKT-atlas region.
             not_dkt = self.check_regions(df_single_view)
@@ -165,6 +171,10 @@ class GraphBuilder:
             # Append single view values
             all_views.append(df_single_view)
         return np.array(all_views)
+
+    def build_column_pattern(self, hemisphere: str, view: str) -> str:
+        """Build the column pattern to pick the correct view and hemisphere."""
+        return self.column_pattern.format(hemisphere, view)
 
     @staticmethod
     def edge_function(src_nodes: np.ndarray, dest_nodes: np.ndarray) -> np.ndarray:
@@ -336,3 +346,80 @@ class CandiShareGraphBuilder(GraphBuilder):
         subjects = self.get_subject_ids()
         disease_names = subjects.str.split("_", n=1, expand=True)[0]
         return disease_names.map(self.label_encoding).values
+
+
+class ADNIGraphBuilder(GraphBuilder):
+    """GraphBuilder for ADNI datasets."""
+
+    def __init__(
+        self, fs_out_path: str, region_mapping_path: str | None = None
+    ) -> None:
+        super().__init__(fs_out_path)
+        self.views = ["Thickness Average", "Surface Area", "Cortical Volume"]
+        self.region_names_column = "Alias_ADNI"
+        self.hemispheres = "Left", "Right"
+        self.column_pattern = r"{}.*{}.*$"
+        self.region_name_pos_in_pattern = -1
+        self.freesurfer_df = self.freesurfer_df[
+            self.freesurfer_df["OVERALLQC"] == "Pass"
+        ]
+        if region_mapping_path:
+            self.region_mapping_path = region_mapping_path
+            self.freesurfer_df = self.map_column_names(self.freesurfer_df)
+
+    def build_column_pattern(self, hemisphere: str, view: str) -> str:
+        """Build the column pattern to pick the correct view and hemisphere."""
+        return self.column_pattern.format(view, hemisphere)
+
+    def map_column_names(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Map RegionIDs in freesurfer dfs to their actual names."""
+        map_from, map_to = "FLDNAME", "TEXT"
+        region_mappings = pd.read_csv(self.region_mapping_path)[[map_from, map_to]]
+        region_mappings[map_to].fillna(region_mappings[map_from], inplace=True)
+        col_mapper = region_mappings.set_index(map_from).to_dict()[map_to]
+        return df.rename(columns=col_mapper)
+
+    def check_regions(self, single_view: pd.DataFrame) -> list[str]:
+        """
+        Check if any column does not indicate a DKT-Atlas region. Return the column names that does not.
+
+        Parameters
+        ----------
+        single_view: pandas Dataframe
+            Part of freesurfer dataframe that includes columns for only one view.
+
+        Returns
+        -------
+        list of strings
+            column names that are not a region of the DKT-atlas.
+        """
+        regions = self.dkt_regions.str.lower().values
+        pattern = r"{}|{}".format(*self.hemispheres).lower()
+        is_not_dkt_region = [
+            re.split(pattern, col.lower())[self.region_name_pos_in_pattern]
+            not in regions
+            for col in single_view.columns
+        ]
+        return single_view.columns[is_not_dkt_region]
+
+    def get_labels(self) -> np.ndarray:  # noqa: PLR6301
+        """
+        Get labels from freesurfer output table.
+
+        Returns
+        -------
+        numpy ndarray
+            Labels encoded as integers in a numpy array.
+        """
+        return np.zeros_like(self.get_subject_ids().values, dtype=np.int32)
+
+    def get_subject_ids(self) -> pd.Series:
+        """
+        Get subject ids from freesurfer output table.
+
+        Returns
+        -------
+        pandas Series
+            Pandas column that subject IDs are located.
+        """
+        return self.freesurfer_df["IMAGEUID"].astype("str")

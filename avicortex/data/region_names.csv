@@ -1,36 +1,36 @@
-Name,Alias_HCP
-Bank of the Superior Temporal Sulcus,Bankssts
-Caudal Anterior-cingulate Cortex,Caudalanteriorcingulate
-Caudal Middle Frontal Gyrus,Caudalmiddlefrontal
-Unmeasured Corpus Callosum,Corpuscallosum
-Cuneus Cortex,Cuneus
-Entorhinal Cortex,Entorhinal
-Fusiform Gyrus,Fusiform
-Inferior Parietal Cortex,Inferiorparietal
-Inferior Temporal Gyrus,Inferiortemporal
-Isthmus-cingulate Cortex,Isthmuscingulate
-Lateral occipital cortex,Lateraloccipital
-Lateral orbital frontal cortex,Lateralorbitofrontal
-Lingual Gyrus,Lingual
-Medial orbital frontal cortex,Medialorbitofrontal
-Middle temporal gyrus,Middletemporal
-Parahippocampal gyrus,Parahippocampal
-Paracentral lobule,Paracentral
-Pars opercularis,Parsopercularis
-Pars orbitalis,Parsorbitalis
-Pars triangularis,Parstriangularis
-Pericalcarine cortex,Pericalcarine
-Postcentral gyrus,Postcentral
-Posterior-cingulate cortex,Posteriorcingulate
-Precentral gyrus,Precentral
-Precuneus cortex,Precuneus
-Rostral anterior cingulate cortex,Rostralanteriorcingulate
-Rostral middle frontal gyrus,Rostralmiddlefrontal
-Superior frontal gyrus,Superiorfrontal
-Superior parietal cortex,Superiorparietal
-Superior temporal gyrus,Superiortemporal
-Supramarginal gyrus,Supramarginal
-Frontal pole,Frontalpole
-Temporal pole,Temporalpole
-Transverse temporal cortex,Transversetemporal
-Insula cortex,Insula
+Name,Alias_HCP,Alias_ADNI
+Bank of the Superior Temporal Sulcus,Bankssts,Bankssts
+Caudal Anterior-cingulate Cortex,Caudalanteriorcingulate,CaudalAnteriorCingulate
+Caudal Middle Frontal Gyrus,Caudalmiddlefrontal,CaudalMiddleFrontal
+Unmeasured Corpus Callosum,Corpuscallosum,CorpusCallosum
+Cuneus Cortex,Cuneus,Cuneus
+Entorhinal Cortex,Entorhinal,Entorhinal
+Fusiform Gyrus,Fusiform,Fusiform
+Inferior Parietal Cortex,Inferiorparietal,InferiorParietal
+Inferior Temporal Gyrus,Inferiortemporal,InferiorTemporal
+Isthmus-cingulate Cortex,Isthmuscingulate,IsthmusCingulate
+Lateral occipital cortex,Lateraloccipital,LateralOccipital
+Lateral orbital frontal cortex,Lateralorbitofrontal,LateralOrbitofrontal
+Lingual Gyrus,Lingual,Lingual
+Medial orbital frontal cortex,Medialorbitofrontal,MedialOrbitofrontal
+Middle temporal gyrus,Middletemporal,MiddleTemporal
+Parahippocampal gyrus,Parahippocampal,Parahippocampal
+Paracentral lobule,Paracentral,Paracentral
+Pars opercularis,Parsopercularis,ParsOpercularis
+Pars orbitalis,Parsorbitalis,ParsOrbitalis
+Pars triangularis,Parstriangularis,ParsTriangularis
+Pericalcarine cortex,Pericalcarine,Pericalcarine
+Postcentral gyrus,Postcentral,Postcentral
+Posterior-cingulate cortex,Posteriorcingulate,PosteriorCingulate
+Precentral gyrus,Precentral,Precentral
+Precuneus cortex,Precuneus,Precuneus
+Rostral anterior cingulate cortex,Rostralanteriorcingulate,RostralAnteriorCingulate
+Rostral middle frontal gyrus,Rostralmiddlefrontal,RostralMiddleFrontal
+Superior frontal gyrus,Superiorfrontal,SuperiorFrontal
+Superior parietal cortex,Superiorparietal,SuperiorParietal
+Superior temporal gyrus,Superiortemporal,SuperiorTemporal
+Supramarginal gyrus,Supramarginal,Supramarginal
+Frontal pole,Frontalpole,FrontalPole
+Temporal pole,Temporalpole,TemporalPole
+Transverse temporal cortex,Transversetemporal,TransverseTemporal
+Insula cortex,Insula,Insula
