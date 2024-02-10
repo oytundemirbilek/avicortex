@@ -552,6 +552,10 @@ class ADNIAlzheimersDataset(GraphDataset):
     ) -> None:
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
+        if freesurfer_regions_path is None:
+            freesurfer_regions_path = os.path.join(
+                DATA_PATH, "adni3_region_mapping.csv"
+            )
         super().__init__(
             hemisphere,
             ADNIGraphBuilder(freesurfer_out_path, freesurfer_regions_path),

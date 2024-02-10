@@ -1,0 +1,346 @@
+FLDNAME,TEXT
+COLPROT,Study protocol of data collection
+RID,Participant roster ID
+VISCODE,Visit code
+VISCODE2,Translated visit code
+EXAMDATE,Examination Date
+VERSION,
+LONIUID,
+IMAGEUID,
+RUNDATE,
+STATUS,
+OVERALLQC,An overall quality rating. Refer to additional QC variables for Partial rating.
+TEMPQC,QC rating of temporal lobe. Fail affects the following regions: LeftTemporalPole (ST60); RightTemporalPole (ST119); LeftFusiform (ST26); RightFusiform (ST85); LeftSuperiorTemporal (ST58); RightSuperiorTemporal (ST117); LeftInferiorTemporal (ST32); RightInferiorTemporal (ST91); LeftMiddleTemporal (ST40); RightMiddleTemporal (ST99)
+FRONTQC,QC rating of the frontal lobe. Fail affects the following regions: LeftFrontalPole (ST25); RightFrontalPole (ST84); LeftPrecentral (ST51); RightPrecentral (ST110); LeftSuperiorFrontal (ST56); RightSuperiorFrontal (ST115); LeftCaudalMiddleFrontal (ST15); RightCaudalMiddleFrontal (ST74); LeftRostralMiddleFrontal (ST55); RightRostralMiddleFrontal (ST114); LeftMedialOrbitofrontal (ST39); RightMedialOrbitofrontal (ST98)
+PARQC,QC rating of the parietal lobe. Fail affects the following regions: LeftPostcentral (ST49); RightPostcentral (ST108); LeftSuperiorParietal (ST57); RightSuperiorParietal (ST116); LeftSupraMarginal (ST59); RightSupraMarginal (ST118); LeftParacentral (ST43); RightParacentral (ST102); LeftInferiorParietal (ST31); RightInferiorParietal (ST90)
+INSULAQC,QC rating of the insula. Fail affects the following regions: LeftInsula (ST129); RightInsula (ST130)
+OCCQC,QC rating of the occipital lobe. Fail affects the following regions: LeftLingual (ST38); RightLingual (ST97); LeftLateralOccipital (ST35); RightLateralOccipital (ST94); LeftPericalcarine (ST48); RightPericalcarine (ST107); LeftCuneus (ST23); RightCuneus (ST82)
+BGQC,QC rating of the basal ganglia. Fail affects the following regions: LeftPutamen (ST53); RightPutamen (ST112); LeftCaudate (ST16); RightCaudate (ST75); LeftPallidum (ST42); RightPallidum (ST101)
+CWMQC,QC rating of the cerebral WM. Fail affects the following regions: LeftCerebralWM (ST20); RightCerebralWM (ST79); LeftCorticalWM (ST150); RightCorticalWM (ST151); CorticalWM (ST152); LeftHemisphereWM (ST28); RightHemisphereWM (ST87)
+VENTQC,QC rating of the ventricles. Fail affects the following regions: LeftLateralVentricle (ST37); RightLateralVentricle (ST96); LeftInferiorLateralVentricle (ST30); RightInferiorLateralVentricle (ST89); ThirdVentricle (ST127); FourthVentricle (ST9); FifthVentrical (ST8); LeftChoroidPlexus (ST21); RightChoroidPlexus (ST80)
+HIPPOQC,QC rating of the hippocampus. Fail affects the following regions:  RightInferiorLateralVentricle (ST89); ThirdVentricle (ST127); FourthVentricle (ST9); FifthVentrical (ST8); LeftChoroidPlexus (ST21); RightChoroidPlexus (ST80)
+ST101SV,Subcortical Volume (aseg.stats) of RightPallidum
+ST102CV,Cortical Volume (aparc.stats) of RightParacentral
+ST102SA,Surface Area (aparc.stats) of RightParacentral
+ST102TA,Thickness Average (aparc.stats) of RightParacentral
+ST102TS,Thickness Stardard Deviation (aparc.stats) of RightParacentral
+ST103CV,Cortical Volume (aparc.stats) of RightParahippocampal
+ST103SA,Surface Area (aparc.stats) of RightParahippocampal
+ST103TA,Thickness Average (aparc.stats) of RightParahippocampal
+ST103TS,Thickness Stardard Deviation (aparc.stats) of RightParahippocampal
+ST104CV,Cortical Volume (aparc.stats) of RightParsOpercularis
+ST104SA,Surface Area (aparc.stats) of RightParsOpercularis
+ST104TA,Thickness Average (aparc.stats) of RightParsOpercularis
+ST104TS,Thickness Stardard Deviation (aparc.stats) of RightParsOpercularis
+ST105CV,Cortical Volume (aparc.stats) of RightParsOrbitalis
+ST105SA,Surface Area (aparc.stats) of RightParsOrbitalis
+ST105TA,Thickness Average (aparc.stats) of RightParsOrbitalis
+ST105TS,Thickness Stardard Deviation (aparc.stats) of RightParsOrbitalis
+ST106CV,Cortical Volume (aparc.stats) of RightParsTriangularis
+ST106SA,Surface Area (aparc.stats) of RightParsTriangularis
+ST106TA,Thickness Average (aparc.stats) of RightParsTriangularis
+ST106TS,Thickness Stardard Deviation (aparc.stats) of RightParsTriangularis
+ST107CV,Cortical Volume (aparc.stats) of RightPericalcarine
+ST107SA,Surface Area (aparc.stats) of RightPericalcarine
+ST107TA,Thickness Average (aparc.stats) of RightPericalcarine
+ST107TS,Thickness Stardard Deviation (aparc.stats) of RightPericalcarine
+ST108CV,Cortical Volume (aparc.stats) of RightPostcentral
+ST108SA,Surface Area (aparc.stats) of RightPostcentral
+ST108TA,Thickness Average (aparc.stats) of RightPostcentral
+ST108TS,Thickness Stardard Deviation (aparc.stats) of RightPostcentral
+ST109CV,Cortical Volume (aparc.stats) of RightPosteriorCingulate
+ST109SA,Surface Area (aparc.stats) of RightPosteriorCingulate
+ST109TA,Thickness Average (aparc.stats) of RightPosteriorCingulate
+ST109TS,Thickness Stardard Deviation (aparc.stats) of RightPosteriorCingulate
+ST10CV,Cortical Volume (aparc.stats) of Icv
+ST110CV,Cortical Volume (aparc.stats) of RightPrecentral
+ST110SA,Surface Area (aparc.stats) of RightPrecentral
+ST110TA,Thickness Average (aparc.stats) of RightPrecentral
+ST110TS,Thickness Stardard Deviation (aparc.stats) of RightPrecentral
+ST111CV,Cortical Volume (aparc.stats) of RightPrecuneus
+ST111SA,Surface Area (aparc.stats) of RightPrecuneus
+ST111TA,Thickness Average (aparc.stats) of RightPrecuneus
+ST111TS,Thickness Stardard Deviation (aparc.stats) of RightPrecuneus
+ST112SV,Subcortical Volume (aseg.stats) of RightPutamen
+ST113CV,Cortical Volume (aparc.stats) of RightRostralAnteriorCingulate
+ST113SA,Surface Area (aparc.stats) of RightRostralAnteriorCingulate
+ST113TA,Thickness Average (aparc.stats) of RightRostralAnteriorCingulate
+ST113TS,Thickness Stardard Deviation (aparc.stats) of RightRostralAnteriorCingulate
+ST114CV,Cortical Volume (aparc.stats) of RightRostralMiddleFrontal
+ST114SA,Surface Area (aparc.stats) of RightRostralMiddleFrontal
+ST114TA,Thickness Average (aparc.stats) of RightRostralMiddleFrontal
+ST114TS,Thickness Stardard Deviation (aparc.stats) of RightRostralMiddleFrontal
+ST115CV,Cortical Volume (aparc.stats) of RightSuperiorFrontal
+ST115SA,Surface Area (aparc.stats) of RightSuperiorFrontal
+ST115TA,Thickness Average (aparc.stats) of RightSuperiorFrontal
+ST115TS,Thickness Stardard Deviation (aparc.stats) of RightSuperiorFrontal
+ST116CV,Cortical Volume (aparc.stats) of RightSuperiorParietal
+ST116SA,Surface Area (aparc.stats) of RightSuperiorParietal
+ST116TA,Thickness Average (aparc.stats) of RightSuperiorParietal
+ST116TS,Thickness Stardard Deviation (aparc.stats) of RightSuperiorParietal
+ST117CV,Cortical Volume (aparc.stats) of RightSuperiorTemporal
+ST117SA,Surface Area (aparc.stats) of RightSuperiorTemporal
+ST117TA,Thickness Average (aparc.stats) of RightSuperiorTemporal
+ST117TS,Thickness Stardard Deviation (aparc.stats) of RightSuperiorTemporal
+ST118CV,Cortical Volume (aparc.stats) of RightSupramarginal
+ST118SA,Surface Area (aparc.stats) of RightSupramarginal
+ST118TA,Thickness Average (aparc.stats) of RightSupramarginal
+ST118TS,Thickness Stardard Deviation (aparc.stats) of RightSupramarginal
+ST119CV,Cortical Volume (aparc.stats) of RightTemporalPole
+ST119SA,Surface Area (aparc.stats) of RightTemporalPole
+ST119TA,Thickness Average (aparc.stats) of RightTemporalPole
+ST119TS,Thickness Stardard Deviation (aparc.stats) of RightTemporalPole
+ST11SV,Subcortical Volume (aseg.stats) of LeftAccumbensArea
+ST120SV,Subcortical Volume (aseg.stats) of RightThalamus
+ST121CV,Cortical Volume (aparc.stats) of RightTransverseTemporal
+ST121SA,Surface Area (aparc.stats) of RightTransverseTemporal
+ST121TA,Thickness Average (aparc.stats) of RightTransverseTemporal
+ST121TS,Thickness Stardard Deviation (aparc.stats) of RightTransverseTemporal
+ST124SV,Subcortical Volume (aseg.stats) of RightVentralDC
+ST125SV,Subcortical Volume (aseg.stats) of RightVessel
+ST127SV,Subcortical Volume (aseg.stats) of ThirdVentricle
+ST128SV,Subcortical Volume (aseg.stats) of WMHypoIntensities
+ST129CV,Cortical Volume (aparc.stats) of LeftInsula
+ST129SA,Surface Area (aparc.stats) of LeftInsula
+ST129TA,Thickness Average (aparc.stats) of LeftInsula
+ST129TS,Thickness Stardard Deviation (aparc.stats) of LeftInsula
+ST12SV,Subcortical Volume (aseg.stats) of LeftAmygdala
+ST130CV,Cortical Volume (aparc.stats) of RightInsula
+ST130SA,Surface Area (aparc.stats) of RightInsula
+ST130TA,Thickness Average (aparc.stats) of RightInsula
+ST130TS,Thickness Stardard Deviation (aparc.stats) of RightInsula
+ST13CV,Cortical Volume (aparc.stats) of LeftBankssts
+ST13SA,Surface Area (aparc.stats) of LeftBankssts
+ST13TA,Thickness Average (aparc.stats) of LeftBankssts
+ST13TS,Thickness Stardard Deviation (aparc.stats) of LeftBankssts
+ST14CV,Cortical Volume (aparc.stats) of LeftCaudalAnteriorCingulate
+ST14SA,Surface Area (aparc.stats) of LeftCaudalAnteriorCingulate
+ST14TA,Thickness Average (aparc.stats) of LeftCaudalAnteriorCingulate
+ST14TS,Thickness Stardard Deviation (aparc.stats) of LeftCaudalAnteriorCingulate
+ST15CV,Cortical Volume (aparc.stats) of LeftCaudalMiddleFrontal
+ST15SA,Surface Area (aparc.stats) of LeftCaudalMiddleFrontal
+ST15TA,Thickness Average (aparc.stats) of LeftCaudalMiddleFrontal
+ST15TS,Thickness Stardard Deviation (aparc.stats) of LeftCaudalMiddleFrontal
+ST16SV,Subcortical Volume (aseg.stats) of LeftCaudate
+ST17SV,Subcortical Volume (aseg.stats) of LeftCerebellumCortex
+ST18SV,Subcortical Volume (aseg.stats) of LeftCerebellumWM
+ST1SV,Subcortical Volume (aseg.stats) of Brainstem
+ST21SV,Subcortical Volume (aseg.stats) of LeftChoroidPlexus
+ST23CV,Cortical Volume (aparc.stats) of LeftCuneus
+ST23SA,Surface Area (aparc.stats) of LeftCuneus
+ST23TA,Thickness Average (aparc.stats) of LeftCuneus
+ST23TS,Thickness Stardard Deviation (aparc.stats) of LeftCuneus
+ST24CV,Cortical Volume (aparc.stats) of LeftEntorhinal
+ST24SA,Surface Area (aparc.stats) of LeftEntorhinal
+ST24TA,Thickness Average (aparc.stats) of LeftEntorhinal
+ST24TS,Thickness Stardard Deviation (aparc.stats) of LeftEntorhinal
+ST25CV,Cortical Volume (aparc.stats) of LeftFrontalPole
+ST25SA,Surface Area (aparc.stats) of LeftFrontalPole
+ST25TA,Thickness Average (aparc.stats) of LeftFrontalPole
+ST25TS,Thickness Stardard Deviation (aparc.stats) of LeftFrontalPole
+ST26CV,Cortical Volume (aparc.stats) of LeftFusiform
+ST26SA,Surface Area (aparc.stats) of LeftFusiform
+ST26TA,Thickness Average (aparc.stats) of LeftFusiform
+ST26TS,Thickness Stardard Deviation (aparc.stats) of LeftFusiform
+ST28SA,Surface Area (aparc.stats) of LeftHemisphereWM
+ST29SV,Subcortical Volume (aseg.stats) of LeftHippocampus
+ST2SV,Subcortical Volume (aseg.stats) of CorpusCallosumAnterior
+ST30SV,Subcortical Volume (aseg.stats) of LeftInferiorLateralVentricle
+ST31CV,Cortical Volume (aparc.stats) of LeftInferiorParietal
+ST31SA,Surface Area (aparc.stats) of LeftInferiorParietal
+ST31TA,Thickness Average (aparc.stats) of LeftInferiorParietal
+ST31TS,Thickness Stardard Deviation (aparc.stats) of LeftInferiorParietal
+ST32CV,Cortical Volume (aparc.stats) of LeftInferiorTemporal
+ST32SA,Surface Area (aparc.stats) of LeftInferiorTemporal
+ST32TA,Thickness Average (aparc.stats) of LeftInferiorTemporal
+ST32TS,Thickness Stardard Deviation (aparc.stats) of LeftInferiorTemporal
+ST34CV,Cortical Volume (aparc.stats) of LeftIsthmusCingulate
+ST34SA,Surface Area (aparc.stats) of LeftIsthmusCingulate
+ST34TA,Thickness Average (aparc.stats) of LeftIsthmusCingulate
+ST34TS,Thickness Stardard Deviation (aparc.stats) of LeftIsthmusCingulate
+ST35CV,Cortical Volume (aparc.stats) of LeftLateralOccipital
+ST35SA,Surface Area (aparc.stats) of LeftLateralOccipital
+ST35TA,Thickness Average (aparc.stats) of LeftLateralOccipital
+ST35TS,Thickness Stardard Deviation (aparc.stats) of LeftLateralOccipital
+ST36CV,Cortical Volume (aparc.stats) of LeftLateralOrbitofrontal
+ST36SA,Surface Area (aparc.stats) of LeftLateralOrbitofrontal
+ST36TA,Thickness Average (aparc.stats) of LeftLateralOrbitofrontal
+ST36TS,Thickness Stardard Deviation (aparc.stats) of LeftLateralOrbitofrontal
+ST37SV,Subcortical Volume (aseg.stats) of LeftLateralVentricle
+ST38CV,Cortical Volume (aparc.stats) of LeftLingual
+ST38SA,Surface Area (aparc.stats) of LeftLingual
+ST38TA,Thickness Average (aparc.stats) of LeftLingual
+ST38TS,Thickness Stardard Deviation (aparc.stats) of LeftLingual
+ST39CV,Cortical Volume (aparc.stats) of LeftMedialOrbitofrontal
+ST39SA,Surface Area (aparc.stats) of LeftMedialOrbitofrontal
+ST39TA,Thickness Average (aparc.stats) of LeftMedialOrbitofrontal
+ST39TS,Thickness Stardard Deviation (aparc.stats) of LeftMedialOrbitofrontal
+ST3SV,Subcortical Volume (aseg.stats) of CorpusCallosumCentral
+ST40CV,Cortical Volume (aparc.stats) of LeftMiddleTemporal
+ST40SA,Surface Area (aparc.stats) of LeftMiddleTemporal
+ST40TA,Thickness Average (aparc.stats) of LeftMiddleTemporal
+ST40TS,Thickness Stardard Deviation (aparc.stats) of LeftMiddleTemporal
+ST42SV,Subcortical Volume (aseg.stats) of LeftPallidum
+ST43CV,Cortical Volume (aparc.stats) of LeftParacentral
+ST43SA,Surface Area (aparc.stats) of LeftParacentral
+ST43TA,Thickness Average (aparc.stats) of LeftParacentral
+ST43TS,Thickness Stardard Deviation (aparc.stats) of LeftParacentral
+ST44CV,Cortical Volume (aparc.stats) of LeftParahippocampal
+ST44SA,Surface Area (aparc.stats) of LeftParahippocampal
+ST44TA,Thickness Average (aparc.stats) of LeftParahippocampal
+ST44TS,Thickness Stardard Deviation (aparc.stats) of LeftParahippocampal
+ST45CV,Cortical Volume (aparc.stats) of LeftParsOpercularis
+ST45SA,Surface Area (aparc.stats) of LeftParsOpercularis
+ST45TA,Thickness Average (aparc.stats) of LeftParsOpercularis
+ST45TS,Thickness Stardard Deviation (aparc.stats) of LeftParsOpercularis
+ST46CV,Cortical Volume (aparc.stats) of LeftParsOrbitalis
+ST46SA,Surface Area (aparc.stats) of LeftParsOrbitalis
+ST46TA,Thickness Average (aparc.stats) of LeftParsOrbitalis
+ST46TS,Thickness Stardard Deviation (aparc.stats) of LeftParsOrbitalis
+ST47CV,Cortical Volume (aparc.stats) of LeftParsTriangularis
+ST47SA,Surface Area (aparc.stats) of LeftParsTriangularis
+ST47TA,Thickness Average (aparc.stats) of LeftParsTriangularis
+ST47TS,Thickness Stardard Deviation (aparc.stats) of LeftParsTriangularis
+ST48CV,Cortical Volume (aparc.stats) of LeftPericalcarine
+ST48SA,Surface Area (aparc.stats) of LeftPericalcarine
+ST48TA,Thickness Average (aparc.stats) of LeftPericalcarine
+ST48TS,Thickness Stardard Deviation (aparc.stats) of LeftPericalcarine
+ST49CV,Cortical Volume (aparc.stats) of LeftPostcentral
+ST49SA,Surface Area (aparc.stats) of LeftPostcentral
+ST49TA,Thickness Average (aparc.stats) of LeftPostcentral
+ST49TS,Thickness Stardard Deviation (aparc.stats) of LeftPostcentral
+ST4SV,Subcortical Volume (aseg.stats) of CorpusCallosumMidAnterior
+ST50CV,Cortical Volume (aparc.stats) of LeftPosteriorCingulate
+ST50SA,Surface Area (aparc.stats) of LeftPosteriorCingulate
+ST50TA,Thickness Average (aparc.stats) of LeftPosteriorCingulate
+ST50TS,Thickness Stardard Deviation (aparc.stats) of LeftPosteriorCingulate
+ST51CV,Cortical Volume (aparc.stats) of LeftPrecentral
+ST51SA,Surface Area (aparc.stats) of LeftPrecentral
+ST51TA,Thickness Average (aparc.stats) of LeftPrecentral
+ST51TS,Thickness Stardard Deviation (aparc.stats) of LeftPrecentral
+ST52CV,Cortical Volume (aparc.stats) of LeftPrecuneus
+ST52SA,Surface Area (aparc.stats) of LeftPrecuneus
+ST52TA,Thickness Average (aparc.stats) of LeftPrecuneus
+ST52TS,Thickness Stardard Deviation (aparc.stats) of LeftPrecuneus
+ST53SV,Subcortical Volume (aseg.stats) of LeftPutamen
+ST54CV,Cortical Volume (aparc.stats) of LeftRostralAnteriorCingulate
+ST54SA,Surface Area (aparc.stats) of LeftRostralAnteriorCingulate
+ST54TA,Thickness Average (aparc.stats) of LeftRostralAnteriorCingulate
+ST54TS,Thickness Stardard Deviation (aparc.stats) of LeftRostralAnteriorCingulate
+ST55CV,Cortical Volume (aparc.stats) of LeftRostralMiddleFrontal
+ST55SA,Surface Area (aparc.stats) of LeftRostralMiddleFrontal
+ST55TA,Thickness Average (aparc.stats) of LeftRostralMiddleFrontal
+ST55TS,Thickness Stardard Deviation (aparc.stats) of LeftRostralMiddleFrontal
+ST56CV,Cortical Volume (aparc.stats) of LeftSuperiorFrontal
+ST56SA,Surface Area (aparc.stats) of LeftSuperiorFrontal
+ST56TA,Thickness Average (aparc.stats) of LeftSuperiorFrontal
+ST56TS,Thickness Stardard Deviation (aparc.stats) of LeftSuperiorFrontal
+ST57CV,Cortical Volume (aparc.stats) of LeftSuperiorParietal
+ST57SA,Surface Area (aparc.stats) of LeftSuperiorParietal
+ST57TA,Thickness Average (aparc.stats) of LeftSuperiorParietal
+ST57TS,Thickness Stardard Deviation (aparc.stats) of LeftSuperiorParietal
+ST58CV,Cortical Volume (aparc.stats) of LeftSuperiorTemporal
+ST58SA,Surface Area (aparc.stats) of LeftSuperiorTemporal
+ST58TA,Thickness Average (aparc.stats) of LeftSuperiorTemporal
+ST58TS,Thickness Stardard Deviation (aparc.stats) of LeftSuperiorTemporal
+ST59CV,Cortical Volume (aparc.stats) of LeftSupramarginal
+ST59SA,Surface Area (aparc.stats) of LeftSupramarginal
+ST59TA,Thickness Average (aparc.stats) of LeftSupramarginal
+ST59TS,Thickness Stardard Deviation (aparc.stats) of LeftSupramarginal
+ST5SV,Subcortical Volume (aseg.stats) of CorpusCallosumMidPosterior
+ST60CV,Cortical Volume (aparc.stats) of LeftTemporalPole
+ST60SA,Surface Area (aparc.stats) of LeftTemporalPole
+ST60TA,Thickness Average (aparc.stats) of LeftTemporalPole
+ST60TS,Thickness Stardard Deviation (aparc.stats) of LeftTemporalPole
+ST61SV,Subcortical Volume (aseg.stats) of LeftThalamus
+ST62CV,Cortical Volume (aparc.stats) of LeftTransverseTemporal
+ST62SA,Surface Area (aparc.stats) of LeftTransverseTemporal
+ST62TA,Thickness Average (aparc.stats) of LeftTransverseTemporal
+ST62TS,Thickness Stardard Deviation (aparc.stats) of LeftTransverseTemporal
+ST65SV,Subcortical Volume (aseg.stats) of LeftVentralDC
+ST66SV,Subcortical Volume (aseg.stats) of LeftVessel
+ST68SV,Subcortical Volume (aseg.stats) of NonWMHypoIntensities
+ST69SV,Subcortical Volume (aseg.stats) of OpticChiasm
+ST6SV,Subcortical Volume (aseg.stats) of CorpusCallosumPosterior
+ST70SV,Subcortical Volume (aseg.stats) of RightAccumbensArea
+ST71SV,Subcortical Volume (aseg.stats) of RightAmygdala
+ST72CV,Cortical Volume (aparc.stats) of RightBankssts
+ST72SA,Surface Area (aparc.stats) of RightBankssts
+ST72TA,Thickness Average (aparc.stats) of RightBankssts
+ST72TS,Thickness Stardard Deviation (aparc.stats) of RightBankssts
+ST73CV,Cortical Volume (aparc.stats) of RightCaudalAnteriorCingulate
+ST73SA,Surface Area (aparc.stats) of RightCaudalAnteriorCingulate
+ST73TA,Thickness Average (aparc.stats) of RightCaudalAnteriorCingulate
+ST73TS,Thickness Stardard Deviation (aparc.stats) of RightCaudalAnteriorCingulate
+ST74CV,Cortical Volume (aparc.stats) of RightCaudalMiddleFrontal
+ST74SA,Surface Area (aparc.stats) of RightCaudalMiddleFrontal
+ST74TA,Thickness Average (aparc.stats) of RightCaudalMiddleFrontal
+ST74TS,Thickness Stardard Deviation (aparc.stats) of RightCaudalMiddleFrontal
+ST75SV,Subcortical Volume (aseg.stats) of RightCaudate
+ST76SV,Subcortical Volume (aseg.stats) of RightCerebellumCortex
+ST77SV,Subcortical Volume (aseg.stats) of RightCerebellumWM
+ST7SV,Subcortical Volume (aseg.stats) of Csf
+ST80SV,Subcortical Volume (aseg.stats) of RightChoroidPlexus
+ST82CV,Cortical Volume (aparc.stats) of RightCuneus
+ST82SA,Surface Area (aparc.stats) of RightCuneus
+ST82TA,Thickness Average (aparc.stats) of RightCuneus
+ST82TS,Thickness Stardard Deviation (aparc.stats) of RightCuneus
+ST83CV,Cortical Volume (aparc.stats) of RightEntorhinal
+ST83SA,Surface Area (aparc.stats) of RightEntorhinal
+ST83TA,Thickness Average (aparc.stats) of RightEntorhinal
+ST83TS,Thickness Stardard Deviation (aparc.stats) of RightEntorhinal
+ST84CV,Cortical Volume (aparc.stats) of RightFrontalPole
+ST84SA,Surface Area (aparc.stats) of RightFrontalPole
+ST84TA,Thickness Average (aparc.stats) of RightFrontalPole
+ST84TS,Thickness Stardard Deviation (aparc.stats) of RightFrontalPole
+ST85CV,Cortical Volume (aparc.stats) of RightFusiform
+ST85SA,Surface Area (aparc.stats) of RightFusiform
+ST85TA,Thickness Average (aparc.stats) of RightFusiform
+ST85TS,Thickness Stardard Deviation (aparc.stats) of RightFusiform
+ST87SA,Surface Area (aparc.stats) of RightHemisphereWM
+ST88SV,Subcortical Volume (aseg.stats) of RightHippocampus
+ST89SV,Subcortical Volume (aseg.stats) of RightInferiorLateralVentricle
+ST8SV,Subcortical Volume (aseg.stats) of FifthVentricle
+ST90CV,Cortical Volume (aparc.stats) of RightInferiorParietal
+ST90SA,Surface Area (aparc.stats) of RightInferiorParietal
+ST90TA,Thickness Average (aparc.stats) of RightInferiorParietal
+ST90TS,Thickness Stardard Deviation (aparc.stats) of RightInferiorParietal
+ST91CV,Cortical Volume (aparc.stats) of RightInferiorTemporal
+ST91SA,Surface Area (aparc.stats) of RightInferiorTemporal
+ST91TA,Thickness Average (aparc.stats) of RightInferiorTemporal
+ST91TS,Thickness Stardard Deviation (aparc.stats) of RightInferiorTemporal
+ST93CV,Cortical Volume (aparc.stats) of RightIsthmusCingulate
+ST93SA,Surface Area (aparc.stats) of RightIsthmusCingulate
+ST93TA,Thickness Average (aparc.stats) of RightIsthmusCingulate
+ST93TS,Thickness Stardard Deviation (aparc.stats) of RightIsthmusCingulate
+ST94CV,Cortical Volume (aparc.stats) of RightLateralOccipital
+ST94SA,Surface Area (aparc.stats) of RightLateralOccipital
+ST94TA,Thickness Average (aparc.stats) of RightLateralOccipital
+ST94TS,Thickness Stardard Deviation (aparc.stats) of RightLateralOccipital
+ST95CV,Cortical Volume (aparc.stats) of RightLateralOrbitofrontal
+ST95SA,Surface Area (aparc.stats) of RightLateralOrbitofrontal
+ST95TA,Thickness Average (aparc.stats) of RightLateralOrbitofrontal
+ST95TS,Thickness Stardard Deviation (aparc.stats) of RightLateralOrbitofrontal
+ST96SV,Subcortical Volume (aseg.stats) of RightLateralVentricle
+ST97CV,Cortical Volume (aparc.stats) of RightLingual
+ST97SA,Surface Area (aparc.stats) of RightLingual
+ST97TA,Thickness Average (aparc.stats) of RightLingual
+ST97TS,Thickness Stardard Deviation (aparc.stats) of RightLingual
+ST98CV,Cortical Volume (aparc.stats) of RightMedialOrbitofrontal
+ST98SA,Surface Area (aparc.stats) of RightMedialOrbitofrontal
+ST98TA,Thickness Average (aparc.stats) of RightMedialOrbitofrontal
+ST98TS,Thickness Stardard Deviation (aparc.stats) of RightMedialOrbitofrontal
+ST99CV,Cortical Volume (aparc.stats) of RightMiddleTemporal
+ST99SA,Surface Area (aparc.stats) of RightMiddleTemporal
+ST99TA,Thickness Average (aparc.stats) of RightMiddleTemporal
+ST99TS,Thickness Stardard Deviation (aparc.stats) of RightMiddleTemporal
+ST9SV,Subcortical Volume (aseg.stats) of FourthVentricle
+ST147SV,Subcortical Volume (aseg.stats) of LeftCorticalGM
+ST148SV,Subcortical Volume (aseg.stats) of RightCorticalGM
+ST149SV,Subcortical Volume (aseg.stats) of CorticalGM
+ST150SV,Subcortical Volume (aseg.stats) of LeftCorticalWM
+ST151SV,Subcortical Volume (aseg.stats) of RightCorticalWM
+ST152SV,Subcortical Volume (aseg.stats) of CorticalWM
+ST153SV,Subcortical Volume (aseg.stats) of SubcorticalGM
+ST154SV,Subcortical Volume (aseg.stats) of TotalGM
+ST155SV,Subcortical Volume (aseg.stats) of SupraTentorial

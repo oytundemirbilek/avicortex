@@ -242,7 +242,6 @@ def test_adni_dataset() -> None:
     tr_dataset = ADNIAlzheimersDataset(
         hemisphere="left",
         freesurfer_out_path=os.path.join(DATA_PATH, "adni", "adni_mock.csv"),
-        freesurfer_regions_path="./.data/adni/adni3_region_table.csv",
     )
     assert len(tr_dataset) == n_samples
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
