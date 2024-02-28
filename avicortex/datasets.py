@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import warnings
 
 import numpy as np
 import torch
@@ -70,8 +71,10 @@ class GraphDataset(Dataset):
     ):
         super().__init__()
         if n_folds is not None:
-            raise DeprecationWarning(
-                "n_folds is deprecated, use train-validation-test splits with data_split_ratio=(4,1,5) instead."
+            warnings.warn(
+                "n_folds is deprecated, use train-validation-test splits with data_split_ratio=(4,1,5) instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
         if hemisphere not in {"left", "right"}:
             raise ValueError("Hemisphere should be 'left' or 'right'.")
