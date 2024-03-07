@@ -111,7 +111,7 @@ class GraphDataset(Dataset):
         if self.test_folds > 1:
             # Keep partition of the data as 'unseen' to be used as test split.
             self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
-                self.subjects_ids.shape[0], self.test_folds, 0
+                self.subjects_ids.shape[0], self.test_folds, 0, self.random_seed
             )
         elif self.test_folds == 1:
             self.seen_data_indices = np.array([], dtype=np.int32)
@@ -134,6 +134,7 @@ class GraphDataset(Dataset):
                 self.seen_subjects_ids.shape[0],
                 self.n_folds,
                 self.current_fold,
+                self.random_seed,
             )
 
         if self.mode == "train":
@@ -236,8 +237,9 @@ class GraphDataset(Dataset):
         )
         return view_graph
 
+    @staticmethod
     def get_fold_indices(
-        self, all_data_size: int, n_folds: int, fold_id: int = 0
+        all_data_size: int, n_folds: int, fold_id: int = 0, random_seed: int = 0
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Create folds and get indices of train and validation datasets.
@@ -256,7 +258,7 @@ class GraphDataset(Dataset):
         val_indices: numpy ndarray
             Indices to get the validation dataset.
         """
-        kf = KFold(n_splits=n_folds, shuffle=True, random_state=self.random_seed)
+        kf = KFold(n_splits=n_folds, shuffle=True, random_state=random_seed)
         split_indices = kf.split(range(all_data_size))
         train_indices, val_indices = [
             (np.array(train), np.array(val)) for train, val in split_indices
