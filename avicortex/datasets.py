@@ -368,6 +368,8 @@ class HCPYoungAdultDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
@@ -380,6 +382,8 @@ class HCPYoungAdultDataset(GraphDataset):
             data_split_ratio,
             in_view_idx,
             out_view_idx,
+            device,
+            random_seed,
         )
 
 
@@ -425,6 +429,8 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         if freesurfer_out_path is None:
             if timepoint is None:
@@ -453,6 +459,8 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
             data_split_ratio,
             in_view_idx,
             out_view_idx,
+            device,
+            random_seed,
         )
 
 
@@ -496,6 +504,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(
@@ -510,6 +520,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
             data_split_ratio,
             in_view_idx,
             out_view_idx,
+            device,
+            random_seed,
         )
 
 
@@ -554,6 +566,8 @@ class ADNIAlzheimersDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         in_view_idx: int | None = None,
         out_view_idx: int | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ) -> None:
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
@@ -570,4 +584,6 @@ class ADNIAlzheimersDataset(GraphDataset):
             data_split_ratio,
             in_view_idx,
             out_view_idx,
+            device,
+            random_seed,
         )
