@@ -208,7 +208,7 @@ def test_view_selection() -> None:
     n_views = 5
     n_nodes = 34
     tr_dataset = OpenNeuroCannabisUsersDataset(
-        hemisphere="left", timepoint="baseline", mode="train", in_view_idx=0
+        hemisphere="left", timepoint="baseline", mode="train", src_view_idx=0
     )
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
     src_graph, tgt_graph = next(iter(tr_dataloader))
@@ -221,8 +221,8 @@ def test_view_selection() -> None:
         hemisphere="left",
         timepoint="baseline",
         mode="train",
-        in_view_idx=0,
-        out_view_idx=3,
+        src_view_idx=0,
+        tgt_view_idx=3,
     )
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
     src_graph, tgt_graph = next(iter(tr_dataloader))

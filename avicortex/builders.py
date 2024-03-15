@@ -26,22 +26,22 @@ class GraphBuilder:
     def __init__(self, fs_out_path: str) -> None:
         self.fs_out_path = fs_out_path
         # Read freesurfer output table.
-        self.freesurfer_df = pd.read_csv(fs_out_path)
         # Pattern used to name columns, usually: hemisphere_region_view
         self.column_pattern = r"{}_.*_{}$"
         self.region_name_pos_in_pattern = 1
         # All regions defined in DKT-Atlas
-        regions_path = os.path.join(ROOT_PATH, "data", "region_names.csv")
+        self.freesurfer_df = pd.read_csv(fs_out_path)
         self.region_names_column = "Alias_HCP"
-        self.dkt_regions = self.get_regions(regions_path)
+        self.get_regions()
         # Define view names to look for.
         self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
 
-    def get_regions(self, path: str) -> pd.Series:
+    def get_regions(self, atlas: str = "dkt") -> pd.Series:
         """Get a list of cortical regions."""
-        return pd.read_csv(path)[self.region_names_column]
+        regions_path = os.path.join(ROOT_PATH, "data", f"region_names_{atlas}.csv")
+        self.atlas_regions = pd.read_csv(regions_path)[self.region_names_column]
 
     def check_regions(self, single_view: pd.DataFrame) -> list[str]:
         """
@@ -57,7 +57,7 @@ class GraphBuilder:
         list of strings
             column names that are not a region of the DKT-atlas.
         """
-        regions = self.dkt_regions.str.lower().values
+        regions = self.atlas_regions.str.lower().values
         # found_regions = [
         #     c.lower().split("_")[self.region_name_pos_in_pattern]
         #     for c in single_view.columns
@@ -393,7 +393,7 @@ class ADNIGraphBuilder(GraphBuilder):
         list of strings
             column names that are not a region of the DKT-atlas.
         """
-        regions = self.dkt_regions.str.lower().values
+        regions = self.atlas_regions.str.lower().values
         pattern = r"{}|{}".format(*self.hemispheres).lower()
         is_not_dkt_region = [
             re.split(pattern, col.lower())[self.region_name_pos_in_pattern]

@@ -64,8 +64,8 @@ class GraphDataset(Dataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
@@ -88,8 +88,8 @@ class GraphDataset(Dataset):
             raise ValueError("Validation split should be 1. Define others based on it.")
 
         self.n_folds = data_split_ratio[0] + data_split_ratio[1]
-        self.in_view_idx = in_view_idx
-        self.out_view_idx = out_view_idx
+        self.src_view_idx = src_view_idx
+        self.tgt_view_idx = tgt_view_idx
         self.current_fold = current_fold
         self.data_split_ratio = data_split_ratio
         self.gbuilder = gbuilder
@@ -165,10 +165,10 @@ class GraphDataset(Dataset):
         """Return source-target pair of the subject from a given index."""
         graph = self.get_view_graph_for_subject(index)
         in_view, out_view = graph, graph
-        if self.in_view_idx is not None:
-            in_view = self._select_view(graph, self.in_view_idx)
-        if self.out_view_idx is not None:
-            out_view = self._select_view(graph, self.out_view_idx)
+        if self.src_view_idx is not None:
+            in_view = self._select_view(graph, self.src_view_idx)
+        if self.tgt_view_idx is not None:
+            out_view = self._select_view(graph, self.tgt_view_idx)
         return in_view, out_view
 
     def __len__(self) -> int:
@@ -366,8 +366,8 @@ class HCPYoungAdultDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
@@ -378,8 +378,8 @@ class HCPYoungAdultDataset(GraphDataset):
             n_folds,
             current_fold,
             data_split_ratio,
-            in_view_idx,
-            out_view_idx,
+            src_view_idx,
+            tgt_view_idx,
         )
 
 
@@ -423,8 +423,8 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             if timepoint is None:
@@ -451,8 +451,8 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
             n_folds,
             current_fold,
             data_split_ratio,
-            in_view_idx,
-            out_view_idx,
+            src_view_idx,
+            tgt_view_idx,
         )
 
 
@@ -494,8 +494,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
     ):
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(
@@ -508,8 +508,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
             n_folds,
             current_fold,
             data_split_ratio,
-            in_view_idx,
-            out_view_idx,
+            src_view_idx,
+            tgt_view_idx,
         )
 
 
@@ -552,8 +552,8 @@ class ADNIAlzheimersDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
     ) -> None:
         if freesurfer_out_path is None:
             freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
@@ -568,6 +568,6 @@ class ADNIAlzheimersDataset(GraphDataset):
             n_folds,
             current_fold,
             data_split_ratio,
-            in_view_idx,
-            out_view_idx,
+            src_view_idx,
+            tgt_view_idx,
         )

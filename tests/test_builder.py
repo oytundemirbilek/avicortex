@@ -26,8 +26,8 @@ def test_builder_init_timepoints() -> None:
     assert gbuilder_bl.views is not None
     assert gbuilder_fu.views is not None
 
-    assert gbuilder_bl.dkt_regions is not None
-    assert gbuilder_fu.dkt_regions is not None
+    assert gbuilder_bl.atlas_regions is not None
+    assert gbuilder_fu.atlas_regions is not None
 
     assert gbuilder_bl.label_encoding is not None
     assert gbuilder_fu.label_encoding is not None
