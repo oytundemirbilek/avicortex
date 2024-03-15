@@ -25,21 +25,25 @@ class GraphBuilder:
 
     def __init__(self, fs_out_path: str) -> None:
         self.fs_out_path = fs_out_path
-        # Read freesurfer output table.
         # Pattern used to name columns, usually: hemisphere_region_view
         self.column_pattern = r"{}_.*_{}$"
         self.region_name_pos_in_pattern = 1
-        # All regions defined in DKT-Atlas
-        self.freesurfer_df = pd.read_csv(fs_out_path)
         self.region_names_column = "Alias_HCP"
-        self.get_regions()
+        # All regions defined in DKT-Atlas
+        self.load_atlas()
         # Define view names to look for.
         self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
 
-    def get_regions(self, atlas: str = "dkt") -> pd.Series:
+    def load_atlas(
+        self, atlas_path: str | None = None, atlas: str = "dkt"
+    ) -> pd.Series:
         """Get a list of cortical regions."""
+        # Read freesurfer output table.
+        if atlas_path is None:
+            atlas_path = self.fs_out_path
+        self.freesurfer_df = pd.read_csv(atlas_path)
         regions_path = os.path.join(ROOT_PATH, "data", f"region_names_{atlas}.csv")
         self.atlas_regions = pd.read_csv(regions_path)[self.region_names_column]
 
@@ -354,18 +358,13 @@ class ADNIGraphBuilder(GraphBuilder):
     def __init__(
         self, fs_out_path: str, region_mapping_path: str | None = None
     ) -> None:
+        self.region_mapping_path = region_mapping_path
         super().__init__(fs_out_path)
         self.views = ["Thickness Average", "Surface Area", "Cortical Volume"]
         self.region_names_column = "Alias_ADNI"
         self.hemispheres = "Left", "Right"
         self.column_pattern = r"{}.*{}.*$"
         self.region_name_pos_in_pattern = -1
-        self.freesurfer_df = self.freesurfer_df[
-            self.freesurfer_df["OVERALLQC"] == "Pass"
-        ]
-        if region_mapping_path:
-            self.region_mapping_path = region_mapping_path
-            self.freesurfer_df = self.map_column_names(self.freesurfer_df)
 
     def build_column_pattern(self, hemisphere: str, view: str) -> str:
         """Build the column pattern to pick the correct view and hemisphere."""
@@ -378,6 +377,24 @@ class ADNIGraphBuilder(GraphBuilder):
         region_mappings[map_to].fillna(region_mappings[map_from], inplace=True)
         col_mapper = region_mappings.set_index(map_from).to_dict()[map_to]
         return df.rename(columns=col_mapper)
+
+    def load_atlas(
+        self, atlas_path: str | None = None, atlas: str = "dkt"
+    ) -> pd.Series:
+        """Get a list of cortical regions."""
+        # Read freesurfer output table.
+        if atlas_path is None:
+            atlas_path = self.fs_out_path
+        self.freesurfer_df = pd.read_csv(atlas_path)
+        regions_path = os.path.join(ROOT_PATH, "data", f"region_names_{atlas}.csv")
+        self.atlas_regions = pd.read_csv(regions_path)[self.region_names_column]
+
+        self.freesurfer_df = self.freesurfer_df[
+            self.freesurfer_df["OVERALLQC"] == "Pass"
+        ]
+        if self.region_mapping_path:
+            self.region_mapping_path = self.region_mapping_path
+            self.freesurfer_df = self.map_column_names(self.freesurfer_df)
 
     def check_regions(self, single_view: pd.DataFrame) -> list[str]:
         """

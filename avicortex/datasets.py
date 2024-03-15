@@ -66,6 +66,8 @@ class GraphDataset(Dataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
+        src_atlas: str = "dkt",
+        tgt_atlas: str = "dkt",
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
@@ -90,68 +92,47 @@ class GraphDataset(Dataset):
         self.n_folds = data_split_ratio[0] + data_split_ratio[1]
         self.src_view_idx = src_view_idx
         self.tgt_view_idx = tgt_view_idx
+        self.src_atlas = src_atlas
+        self.tgt_atlas = tgt_atlas
         self.current_fold = current_fold
         self.data_split_ratio = data_split_ratio
         self.gbuilder = gbuilder
-        self.subjects_labels = self.gbuilder.get_labels()
         self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
-        (self.subjects_nodes, self.subjects_edges) = self.gbuilder.construct(
-            hem=self.hemisphere
-        )
-        self.subjects_nodes = self.subjects_nodes.transpose((1, 0, 2))
-        self.subjects_edges = self.subjects_edges.transpose((2, 0, 1, 3))
-
-        if data_split_ratio[2] > 0:
-            self.test_folds = (
-                data_split_ratio[0] + data_split_ratio[1] + data_split_ratio[2]
-            ) // data_split_ratio[2]
-        else:
-            self.test_folds = 0
-
-        if self.test_folds > 1:
-            # Keep partition of the data as 'unseen' to be used as test split.
-            self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
-                self.subjects_ids.shape[0], self.test_folds, 0, self.random_seed
-            )
-        elif self.test_folds == 1:
-            self.seen_data_indices = np.array([], dtype=np.int32)
-            self.unseen_data_indices = np.arange(
-                self.subjects_ids.shape[0], dtype=np.int32
-            )
-        elif self.test_folds == 0:
-            self.unseen_data_indices = np.array([], dtype=np.int32)
-            self.seen_data_indices = np.arange(
-                self.subjects_ids.shape[0], dtype=np.int32
-            )
+        self.init_arrange_splits()
+        self.subjects_labels = self.gbuilder.get_labels()
+        self.subjects_nodes_src, self.subjects_edges_src = np.array([]), np.array([])
+        self.subjects_nodes_tgt, self.subjects_edges_tgt = np.array([]), np.array([])
+        self.init_load_atlases()
 
         if self.mode in {"train", "validation"}:
-            self.seen_subjects_labels = self.subjects_labels[self.seen_data_indices]
-            self.seen_subjects_nodes = self.subjects_nodes[self.seen_data_indices]
-            self.seen_subjects_edges = self.subjects_edges[self.seen_data_indices]
-            self.seen_subjects_ids = self.subjects_ids[self.seen_data_indices]
-
-            self.tr_indices, self.val_indices = self.get_fold_indices(
-                self.seen_subjects_ids.shape[0],
-                self.n_folds,
-                self.current_fold,
-                self.random_seed,
-            )
+            self.seen_subjects_labels = self.subjects_labels[self.seen_indices]
+            self.seen_subjects_nodes_src = self.subjects_nodes_src[self.seen_indices]
+            self.seen_subjects_nodes_tgt = self.subjects_nodes_tgt[self.seen_indices]
+            self.seen_subjects_edges_src = self.subjects_edges_src[self.seen_indices]
+            self.seen_subjects_edges_tgt = self.subjects_edges_tgt[self.seen_indices]
+            self.seen_subjects_ids = self.subjects_ids[self.seen_indices]
 
         if self.mode == "train":
             self.subjects_labels = self.seen_subjects_labels[self.tr_indices]
-            self.subjects_nodes = self.seen_subjects_nodes[self.tr_indices]
-            self.subjects_edges = self.seen_subjects_edges[self.tr_indices]
+            self.subjects_nodes_src = self.seen_subjects_nodes_src[self.tr_indices]
+            self.subjects_nodes_tgt = self.seen_subjects_nodes_tgt[self.tr_indices]
+            self.subjects_edges_src = self.seen_subjects_edges_src[self.tr_indices]
+            self.subjects_edges_tgt = self.seen_subjects_edges_tgt[self.tr_indices]
             self.subjects_ids = self.seen_subjects_ids[self.tr_indices]
         elif self.mode == "validation":
             self.subjects_labels = self.seen_subjects_labels[self.val_indices]
-            self.subjects_nodes = self.seen_subjects_nodes[self.val_indices]
-            self.subjects_edges = self.seen_subjects_edges[self.val_indices]
+            self.subjects_nodes_src = self.seen_subjects_nodes_src[self.val_indices]
+            self.subjects_nodes_tgt = self.seen_subjects_nodes_tgt[self.val_indices]
+            self.subjects_edges_src = self.seen_subjects_edges_src[self.val_indices]
+            self.subjects_edges_tgt = self.seen_subjects_edges_tgt[self.val_indices]
             self.subjects_ids = self.seen_subjects_ids[self.val_indices]
         elif self.mode == "test":
-            self.subjects_labels = self.subjects_labels[self.unseen_data_indices]
-            self.subjects_nodes = self.subjects_nodes[self.unseen_data_indices]
-            self.subjects_edges = self.subjects_edges[self.unseen_data_indices]
-            self.subjects_ids = self.subjects_ids[self.unseen_data_indices]
+            self.subjects_labels = self.subjects_labels[self.unseen_indices]
+            self.subjects_nodes_src = self.subjects_nodes_src[self.unseen_indices]
+            self.subjects_nodes_tgt = self.subjects_nodes_tgt[self.unseen_indices]
+            self.subjects_edges_src = self.subjects_edges_src[self.unseen_indices]
+            self.subjects_edges_tgt = self.subjects_edges_tgt[self.unseen_indices]
+            self.subjects_ids = self.subjects_ids[self.unseen_indices]
         elif self.mode == "inference":
             pass
         else:
@@ -159,17 +140,66 @@ class GraphDataset(Dataset):
                 "mode should be 'train', 'validation', 'test' or 'inference'"
             )
 
-        self.n_subj, self.n_nodes, self.n_views = self.subjects_nodes.shape
+        self.n_subj, self.n_nodes, self.n_views = self.subjects_nodes_src.shape
+
+    def init_arrange_splits(self) -> None:
+        """Assign indices to the train-validation-test splits."""
+        if self.data_split_ratio[2] > 0:
+            self.test_folds = (
+                self.data_split_ratio[0]
+                + self.data_split_ratio[1]
+                + self.data_split_ratio[2]
+            ) // self.data_split_ratio[2]
+        else:
+            self.test_folds = 0
+
+        if self.test_folds > 1:
+            # Keep partition of the data as 'unseen' to be used as test split.
+            self.seen_indices, self.unseen_indices = self.get_fold_indices(
+                self.subjects_ids.shape[0], self.test_folds, 0, self.random_seed
+            )
+        elif self.test_folds == 1:
+            self.seen_indices = np.array([], dtype=np.int32)
+            self.unseen_indices = np.arange(self.subjects_ids.shape[0], dtype=np.int32)
+        elif self.test_folds == 0:
+            self.unseen_indices = np.array([], dtype=np.int32)
+            self.seen_indices = np.arange(self.subjects_ids.shape[0], dtype=np.int32)
+
+        if self.mode in {"train", "validation"}:
+            self.tr_indices, self.val_indices = self.get_fold_indices(
+                self.seen_indices.shape[0],
+                self.n_folds,
+                self.current_fold,
+                self.random_seed,
+            )
+
+    def init_load_atlases(self) -> None:
+        """Load node and edge feature sets based on the source and target atlases."""
+        # Source atlas
+        self.gbuilder.load_atlas(atlas_path=None, atlas=self.src_atlas)
+        (self.subjects_nodes_src, self.subjects_edges_src) = self.gbuilder.construct(
+            hem=self.hemisphere
+        )
+        self.subjects_nodes_src = self.subjects_nodes_src.transpose((1, 0, 2))
+        self.subjects_edges_src = self.subjects_edges_src.transpose((2, 0, 1, 3))
+
+        # Target atlas
+        self.gbuilder.load_atlas(atlas_path=None, atlas=self.tgt_atlas)
+        (self.subjects_nodes_tgt, self.subjects_edges_tgt) = self.gbuilder.construct(
+            hem=self.hemisphere
+        )
+        self.subjects_nodes_tgt = self.subjects_nodes_tgt.transpose((1, 0, 2))
+        self.subjects_edges_tgt = self.subjects_edges_tgt.transpose((2, 0, 1, 3))
 
     def __getitem__(self, index: int) -> tuple[Tensor, Tensor]:
         """Return source-target pair of the subject from a given index."""
-        graph = self.get_view_graph_for_subject(index)
-        in_view, out_view = graph, graph
+        src_graph = self.get_view_graph_for_subject(index, tgt=False)
+        tgt_graph = self.get_view_graph_for_subject(index, tgt=True)
         if self.src_view_idx is not None:
-            in_view = self._select_view(graph, self.src_view_idx)
+            src_graph = self._select_view(src_graph, self.src_view_idx)
         if self.tgt_view_idx is not None:
-            out_view = self._select_view(graph, self.tgt_view_idx)
-        return in_view, out_view
+            tgt_graph = self._select_view(tgt_graph, self.tgt_view_idx)
+        return src_graph, tgt_graph
 
     def __len__(self) -> int:
         """Return length of the dataset."""
@@ -215,7 +245,7 @@ class GraphDataset(Dataset):
             subject_id=subject_id,
         )
 
-    def get_view_graph_for_subject(self, subj_idx: int) -> PygData:
+    def get_view_graph_for_subject(self, subj_idx: int, tgt: bool = False) -> PygData:
         """
         For a single subject of a given index, combine data from different views and construct a multigraph.
 
@@ -229,13 +259,20 @@ class GraphDataset(Dataset):
         view_graph: torch_geometric Data object (PygData)
             A multigraph that encodes the brain of the subject.
         """
-        view_graph = self.create_graph_obj(
-            self.subjects_edges[subj_idx],
-            self.subjects_nodes[subj_idx],
-            self.subjects_labels[subj_idx : subj_idx + 1],
-            self.subjects_ids[subj_idx],
-        )
-        return view_graph
+        if tgt:
+            return self.create_graph_obj(
+                self.subjects_edges_tgt[subj_idx],
+                self.subjects_nodes_tgt[subj_idx],
+                self.subjects_labels[subj_idx : subj_idx + 1],
+                self.subjects_ids[subj_idx],
+            )
+        else:
+            return self.create_graph_obj(
+                self.subjects_edges_src[subj_idx],
+                self.subjects_nodes_src[subj_idx],
+                self.subjects_labels[subj_idx : subj_idx + 1],
+                self.subjects_ids[subj_idx],
+            )
 
     @staticmethod
     def get_fold_indices(

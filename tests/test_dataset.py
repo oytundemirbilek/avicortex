@@ -95,20 +95,20 @@ def test_cross_validation() -> None:
     )
     assert tr_dataset.n_subj == len(tr_dataset.tr_indices)
     assert tr_dataset.n_subj == len(tr_dataset.subjects_labels)
-    assert tr_dataset.n_subj == len(tr_dataset.subjects_nodes)
-    assert tr_dataset.n_subj == len(tr_dataset.subjects_edges)
+    assert tr_dataset.n_subj == len(tr_dataset.subjects_nodes_src)
+    assert tr_dataset.n_subj == len(tr_dataset.subjects_edges_src)
     assert tr_dataset.n_subj == 16
 
     assert val_dataset.n_subj == len(val_dataset.val_indices)
     assert val_dataset.n_subj == len(val_dataset.subjects_labels)
-    assert val_dataset.n_subj == len(val_dataset.subjects_nodes)
-    assert val_dataset.n_subj == len(val_dataset.subjects_edges)
+    assert val_dataset.n_subj == len(val_dataset.subjects_nodes_src)
+    assert val_dataset.n_subj == len(val_dataset.subjects_edges_src)
     assert val_dataset.n_subj == 5
 
-    assert test_dataset.n_subj == len(test_dataset.unseen_data_indices)
+    assert test_dataset.n_subj == len(test_dataset.unseen_indices)
     assert test_dataset.n_subj == len(test_dataset.subjects_labels)
-    assert test_dataset.n_subj == len(test_dataset.subjects_nodes)
-    assert test_dataset.n_subj == len(test_dataset.subjects_edges)
+    assert test_dataset.n_subj == len(test_dataset.subjects_nodes_src)
+    assert test_dataset.n_subj == len(test_dataset.subjects_edges_src)
     assert test_dataset.n_subj == 21
 
     tr_set = set(tr_dataset.tr_indices)
@@ -123,20 +123,20 @@ def test_cross_validation() -> None:
     tr_ids = set(tr_dataset.subjects_ids)
     assert len(tr_ids.intersection(val_ids)) == 0
 
-    seen_set = set(test_dataset.seen_data_indices)
-    test_set = set(test_dataset.unseen_data_indices)
+    seen_set = set(test_dataset.seen_indices)
+    test_set = set(test_dataset.unseen_indices)
     assert len(test_set.intersection(seen_set)) == 0
 
     test_dataset = OpenNeuroCannabisUsersDataset(
         hemisphere="left", timepoint=None, mode="test"
     )
-    assert test_dataset.n_subj == len(test_dataset.unseen_data_indices)
+    assert test_dataset.n_subj == len(test_dataset.unseen_indices)
     assert test_dataset.n_subj == len(test_dataset.subjects_labels)
-    assert test_dataset.n_subj == len(test_dataset.subjects_nodes)
-    assert test_dataset.n_subj == len(test_dataset.subjects_edges)
+    assert test_dataset.n_subj == len(test_dataset.subjects_nodes_src)
+    assert test_dataset.n_subj == len(test_dataset.subjects_edges_src)
     assert test_dataset.n_subj == 42
-    seen_set = set(test_dataset.seen_data_indices)
-    test_set = set(test_dataset.unseen_data_indices)
+    seen_set = set(test_dataset.seen_indices)
+    test_set = set(test_dataset.unseen_indices)
     assert len(test_set.intersection(seen_set)) == 0
 
     test_ids = set(test_dataset.subjects_ids)
