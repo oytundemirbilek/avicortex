@@ -59,13 +59,16 @@ class GraphDataset(Dataset):
     def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
-        gbuilder: GraphBuilder,
         mode: str = "inference",
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
@@ -88,70 +91,51 @@ class GraphDataset(Dataset):
             raise ValueError("Validation split should be 1. Define others based on it.")
 
         self.n_folds = data_split_ratio[0] + data_split_ratio[1]
-        self.in_view_idx = in_view_idx
-        self.out_view_idx = out_view_idx
+        self.src_view_idx = src_view_idx
+        self.tgt_view_idx = tgt_view_idx
+        self.src_atlas_path = src_atlas_path
+        self.tgt_atlas_path = tgt_atlas_path
+        self.src_atlas = src_atlas
+        self.tgt_atlas = tgt_atlas
         self.current_fold = current_fold
         self.data_split_ratio = data_split_ratio
-        self.gbuilder = gbuilder
-        self.subjects_labels = self.gbuilder.get_labels()
+        self.gbuilder = self.get_graph_builder()
+        self.subjects_nodes_src, self.subjects_edges_src = np.array([]), np.array([])
+        self.subjects_nodes_tgt, self.subjects_edges_tgt = np.array([]), np.array([])
+        self.init_load_atlases()
         self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
-        (self.subjects_nodes, self.subjects_edges) = self.gbuilder.construct(
-            hem=self.hemisphere
-        )
-        self.subjects_nodes = self.subjects_nodes.transpose((1, 0, 2))
-        self.subjects_edges = self.subjects_edges.transpose((2, 0, 1, 3))
-
-        if data_split_ratio[2] > 0:
-            self.test_folds = (
-                data_split_ratio[0] + data_split_ratio[1] + data_split_ratio[2]
-            ) // data_split_ratio[2]
-        else:
-            self.test_folds = 0
-
-        if self.test_folds > 1:
-            # Keep partition of the data as 'unseen' to be used as test split.
-            self.seen_data_indices, self.unseen_data_indices = self.get_fold_indices(
-                self.subjects_ids.shape[0], self.test_folds, 0, self.random_seed
-            )
-        elif self.test_folds == 1:
-            self.seen_data_indices = np.array([], dtype=np.int32)
-            self.unseen_data_indices = np.arange(
-                self.subjects_ids.shape[0], dtype=np.int32
-            )
-        elif self.test_folds == 0:
-            self.unseen_data_indices = np.array([], dtype=np.int32)
-            self.seen_data_indices = np.arange(
-                self.subjects_ids.shape[0], dtype=np.int32
-            )
+        self.init_arrange_splits()
+        self.subjects_labels = self.gbuilder.get_labels()
 
         if self.mode in {"train", "validation"}:
-            self.seen_subjects_labels = self.subjects_labels[self.seen_data_indices]
-            self.seen_subjects_nodes = self.subjects_nodes[self.seen_data_indices]
-            self.seen_subjects_edges = self.subjects_edges[self.seen_data_indices]
-            self.seen_subjects_ids = self.subjects_ids[self.seen_data_indices]
-
-            self.tr_indices, self.val_indices = self.get_fold_indices(
-                self.seen_subjects_ids.shape[0],
-                self.n_folds,
-                self.current_fold,
-                self.random_seed,
-            )
+            self.seen_subjects_labels = self.subjects_labels[self.seen_indices]
+            self.seen_subjects_nodes_src = self.subjects_nodes_src[self.seen_indices]
+            self.seen_subjects_nodes_tgt = self.subjects_nodes_tgt[self.seen_indices]
+            self.seen_subjects_edges_src = self.subjects_edges_src[self.seen_indices]
+            self.seen_subjects_edges_tgt = self.subjects_edges_tgt[self.seen_indices]
+            self.seen_subjects_ids = self.subjects_ids[self.seen_indices]
 
         if self.mode == "train":
             self.subjects_labels = self.seen_subjects_labels[self.tr_indices]
-            self.subjects_nodes = self.seen_subjects_nodes[self.tr_indices]
-            self.subjects_edges = self.seen_subjects_edges[self.tr_indices]
+            self.subjects_nodes_src = self.seen_subjects_nodes_src[self.tr_indices]
+            self.subjects_nodes_tgt = self.seen_subjects_nodes_tgt[self.tr_indices]
+            self.subjects_edges_src = self.seen_subjects_edges_src[self.tr_indices]
+            self.subjects_edges_tgt = self.seen_subjects_edges_tgt[self.tr_indices]
             self.subjects_ids = self.seen_subjects_ids[self.tr_indices]
         elif self.mode == "validation":
             self.subjects_labels = self.seen_subjects_labels[self.val_indices]
-            self.subjects_nodes = self.seen_subjects_nodes[self.val_indices]
-            self.subjects_edges = self.seen_subjects_edges[self.val_indices]
+            self.subjects_nodes_src = self.seen_subjects_nodes_src[self.val_indices]
+            self.subjects_nodes_tgt = self.seen_subjects_nodes_tgt[self.val_indices]
+            self.subjects_edges_src = self.seen_subjects_edges_src[self.val_indices]
+            self.subjects_edges_tgt = self.seen_subjects_edges_tgt[self.val_indices]
             self.subjects_ids = self.seen_subjects_ids[self.val_indices]
         elif self.mode == "test":
-            self.subjects_labels = self.subjects_labels[self.unseen_data_indices]
-            self.subjects_nodes = self.subjects_nodes[self.unseen_data_indices]
-            self.subjects_edges = self.subjects_edges[self.unseen_data_indices]
-            self.subjects_ids = self.subjects_ids[self.unseen_data_indices]
+            self.subjects_labels = self.subjects_labels[self.unseen_indices]
+            self.subjects_nodes_src = self.subjects_nodes_src[self.unseen_indices]
+            self.subjects_nodes_tgt = self.subjects_nodes_tgt[self.unseen_indices]
+            self.subjects_edges_src = self.subjects_edges_src[self.unseen_indices]
+            self.subjects_edges_tgt = self.subjects_edges_tgt[self.unseen_indices]
+            self.subjects_ids = self.subjects_ids[self.unseen_indices]
         elif self.mode == "inference":
             pass
         else:
@@ -159,17 +143,80 @@ class GraphDataset(Dataset):
                 "mode should be 'train', 'validation', 'test' or 'inference'"
             )
 
-        self.n_subj, self.n_nodes, self.n_views = self.subjects_nodes.shape
+        self.n_subj, self.n_nodes_src, self.n_views_src = self.subjects_nodes_src.shape
+        self.n_subj, self.n_nodes_tgt, self.n_views_tgt = self.subjects_nodes_tgt.shape
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return GraphBuilder()
+
+    def init_arrange_splits(self) -> None:
+        """Assign indices to the train-validation-test splits."""
+        if self.data_split_ratio[2] > 0:
+            self.test_folds = (
+                self.data_split_ratio[0]
+                + self.data_split_ratio[1]
+                + self.data_split_ratio[2]
+            ) // self.data_split_ratio[2]
+        else:
+            self.test_folds = 0
+
+        if self.test_folds > 1:
+            # Keep partition of the data as 'unseen' to be used as test split.
+            self.seen_indices, self.unseen_indices = self.get_fold_indices(
+                self.subjects_ids.shape[0], self.test_folds, 0, self.random_seed
+            )
+        elif self.test_folds == 1:
+            self.seen_indices = np.array([], dtype=np.int32)
+            self.unseen_indices = np.arange(self.subjects_ids.shape[0], dtype=np.int32)
+        elif self.test_folds == 0:
+            self.unseen_indices = np.array([], dtype=np.int32)
+            self.seen_indices = np.arange(self.subjects_ids.shape[0], dtype=np.int32)
+
+        if self.mode in {"train", "validation"}:
+            self.tr_indices, self.val_indices = self.get_fold_indices(
+                self.seen_indices.shape[0],
+                self.n_folds,
+                self.current_fold,
+                self.random_seed,
+            )
+
+    def init_load_atlases(self) -> None:
+        """Load node and edge feature sets based on the source and target atlases."""
+        # Source atlas
+        if self.src_atlas_path is None:
+            raise ValueError("Source atlas path is not provided.")
+        if self.tgt_atlas_path is None:
+            raise ValueError("Target atlas path is not provided.")
+        self.gbuilder.load_atlas(
+            fs_stats_atlas_path=self.src_atlas_path, atlas=self.src_atlas
+        )
+        (self.subjects_nodes_src, self.subjects_edges_src) = self.gbuilder.construct(
+            hem=self.hemisphere
+        )
+        self.subjects_nodes_src = self.subjects_nodes_src.transpose((1, 0, 2))
+        self.subjects_edges_src = self.subjects_edges_src.transpose((2, 0, 1, 3))
+
+        # Target atlas
+        self.gbuilder.load_atlas(
+            fs_stats_atlas_path=self.tgt_atlas_path, atlas=self.tgt_atlas
+        )
+        (self.subjects_nodes_tgt, self.subjects_edges_tgt) = self.gbuilder.construct(
+            hem=self.hemisphere
+        )
+        self.subjects_nodes_tgt = self.subjects_nodes_tgt.transpose((1, 0, 2))
+        self.subjects_edges_tgt = self.subjects_edges_tgt.transpose((2, 0, 1, 3))
 
     def __getitem__(self, index: int) -> tuple[Tensor, Tensor]:
         """Return source-target pair of the subject from a given index."""
-        graph = self.get_view_graph_for_subject(index)
-        in_view, out_view = graph, graph
-        if self.in_view_idx is not None:
-            in_view = self._select_view(graph, self.in_view_idx)
-        if self.out_view_idx is not None:
-            out_view = self._select_view(graph, self.out_view_idx)
-        return in_view, out_view
+        src_graph = self.get_view_graph_for_subject(index, tgt=False)
+        tgt_graph = self.get_view_graph_for_subject(index, tgt=True)
+        if self.src_view_idx is not None:
+            src_graph = self._select_view(src_graph, self.src_view_idx)
+        if self.tgt_view_idx is not None:
+            tgt_graph = self._select_view(tgt_graph, self.tgt_view_idx)
+        return src_graph, tgt_graph
 
     def __len__(self) -> int:
         """Return length of the dataset."""
@@ -215,7 +262,7 @@ class GraphDataset(Dataset):
             subject_id=subject_id,
         )
 
-    def get_view_graph_for_subject(self, subj_idx: int) -> PygData:
+    def get_view_graph_for_subject(self, subj_idx: int, tgt: bool = False) -> PygData:
         """
         For a single subject of a given index, combine data from different views and construct a multigraph.
 
@@ -223,19 +270,30 @@ class GraphDataset(Dataset):
         ----------
         subj_idx: int
             Index of the desired subject to construct its multigraph.
+        tgt: boolean
+            Whether the requested graph is a target or not.
 
         Returns
         -------
         view_graph: torch_geometric Data object (PygData)
             A multigraph that encodes the brain of the subject.
         """
-        view_graph = self.create_graph_obj(
-            self.subjects_edges[subj_idx],
-            self.subjects_nodes[subj_idx],
-            self.subjects_labels[subj_idx : subj_idx + 1],
-            self.subjects_ids[subj_idx],
-        )
-        return view_graph
+        if tgt:
+            return self.create_graph_obj(
+                self.subjects_edges_tgt[subj_idx],
+                self.subjects_nodes_tgt[subj_idx],
+                self.subjects_labels[subj_idx : subj_idx + 1],
+                self.subjects_ids[subj_idx],
+                tgt,
+            )
+        else:
+            return self.create_graph_obj(
+                self.subjects_edges_src[subj_idx],
+                self.subjects_nodes_src[subj_idx],
+                self.subjects_labels[subj_idx : subj_idx + 1],
+                self.subjects_ids[subj_idx],
+                tgt,
+            )
 
     @staticmethod
     def get_fold_indices(
@@ -250,6 +308,8 @@ class GraphDataset(Dataset):
             Size of all data.
         fold_id: int
             Which cross validation fold to get the indices for.
+        random_seed: int
+            Random seed to be used for randomization.
 
         Returns
         -------
@@ -273,6 +333,7 @@ class GraphDataset(Dataset):
         node_features: np.ndarray,
         labels: np.ndarray,
         subject_id: str,
+        tgt: bool = True,
     ) -> PygData:
         """
         Combine edges, nodes and labels to create a graph object for torch_geometric.
@@ -285,6 +346,10 @@ class GraphDataset(Dataset):
             Node feature matrix for the graph. Shaped (n_nodes, n_views)
         labels: numpy ndarray
             Subject-level labels. Only one label if batch size is 1.
+        subject_id: string
+            Subject ID attached to the graph.
+        tgt: boolean
+            Whether the requested graph is a target or not.
 
         Returns
         -------
@@ -292,16 +357,21 @@ class GraphDataset(Dataset):
             Graph object designed to be used in the torch_geometric functions.
         """
         # Edge weights, ensure shape.
-        edges = adj_matrix.reshape((self.n_nodes * self.n_nodes, self.n_views))
+        n_nodes = self.n_nodes_src
+        n_views = self.n_views_src
+        if tgt:
+            n_nodes = self.n_nodes_tgt
+            n_views = self.n_views_tgt
+        edges = adj_matrix.reshape((n_nodes * n_nodes, n_views))
         # Torch operations execute faster to create source-destination pairs.
         # [0,1,2,3,0,1,2,3...]
-        dst_index = torch.arange(self.n_nodes).repeat(self.n_nodes)
+        dst_index = torch.arange(n_nodes).repeat(n_nodes)
         # [0,0,0,0,1,1,1,1...]
         src_index = (
-            torch.arange(self.n_nodes)
-            .expand(self.n_nodes, self.n_nodes)
+            torch.arange(n_nodes)
+            .expand(n_nodes, n_nodes)
             .transpose(0, 1)
-            .reshape(self.n_nodes * self.n_nodes)
+            .reshape(n_nodes * n_nodes)
         )
         # COO Matrix for index src-dst pairs. And add batch dimensions.
         edge_index = torch.stack([src_index, dst_index]).to(self.device)
@@ -323,8 +393,9 @@ class GraphDataset(Dataset):
         """Dunder function to return string representation of the dataset."""
         return (
             f"{self.__class__.__name__} multigraph dataset ({self.mode}) {self.hemisphere} hemisphere with"
-            f" n_views={self.n_views}, n_nodes={self.n_nodes}, n_subjects={self.n_subj}, "
-            f"current fold:{self.current_fold + 1}/{self.n_folds}"
+            f", n_subjects={self.n_subj}, current fold:{self.current_fold + 1}/{self.n_folds}"
+            f", n_views_source={self.n_views_src}, n_nodes_source={self.n_nodes_src}"
+            f", n_views_target={self.n_views_tgt}, n_nodes_target={self.n_nodes_tgt}"
         )
 
 
@@ -358,7 +429,7 @@ class HCPYoungAdultDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -366,25 +437,51 @@ class HCPYoungAdultDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
+        default_file = "hcp_young_adult.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path_ref is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path_ref is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
         super().__init__(
-            hemisphere,
-            HCPGraphBuilder(freesurfer_out_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            in_view_idx,
-            out_view_idx,
-            device,
-            random_seed,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return HCPGraphBuilder()
 
 
 class OpenNeuroCannabisUsersDataset(GraphDataset):
@@ -418,7 +515,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -427,41 +524,73 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
-        if freesurfer_out_path is None:
-            if timepoint is None:
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_all_dktatlas.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if timepoint is None:
+            if src_atlas_path_ref is None:
+                src_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_baseline_{src_atlas}.csv"
                 )
-            elif timepoint == "baseline":
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_baseline_dktatlas.csv"
+            if tgt_atlas_path_ref is None:
+                tgt_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_followup_{tgt_atlas}.csv"
                 )
-            elif timepoint == "followup":
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_followup_dktatlas.csv"
+        else:
+            if src_atlas_path_ref is None:
+                src_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_{timepoint}_{src_atlas}.csv"
+                )
+            if tgt_atlas_path_ref is None:
+                tgt_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_{timepoint}_{tgt_atlas}.csv"
                 )
             else:
-                raise ValueError(
-                    "timepoint should be one of: 'baseline', 'followup' or None."
+                warnings.warn(
+                    "Data will be loaded from the provided paths, even if timepoint is set differently.",
+                    UserWarning,
+                    stacklevel=2,
                 )
-        include_all = freesurfer_out_path.endswith("openneuro_all_dktatlas.csv")
+                src_atlas_path_ref = src_atlas_path
+                tgt_atlas_path_ref = tgt_atlas_path
+
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
+
         super().__init__(
-            hemisphere,
-            OpenNeuroGraphBuilder(freesurfer_out_path, include_all),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            in_view_idx,
-            out_view_idx,
-            device,
-            random_seed,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return OpenNeuroGraphBuilder()
 
 
 class CandiShareSchizophreniaDataset(GraphDataset):
@@ -494,7 +623,7 @@ class CandiShareSchizophreniaDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -502,27 +631,50 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(
-                DATA_PATH, "candishare_schizophrenia_dktatlas.csv"
+        default_file = "candishare_schizophrenia_dktatlas.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path_ref is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path_ref is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
         super().__init__(
-            hemisphere,
-            CandiShareGraphBuilder(freesurfer_out_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            in_view_idx,
-            out_view_idx,
-            device,
-            random_seed,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return CandiShareGraphBuilder()
 
 
 class ADNIAlzheimersDataset(GraphDataset):
@@ -555,35 +707,56 @@ class ADNIAlzheimersDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
-        freesurfer_regions_path: str | None = None,
         mode: str = "inference",
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-        in_view_idx: int | None = None,
-        out_view_idx: int | None = None,
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ) -> None:
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
-        if freesurfer_regions_path is None:
-            freesurfer_regions_path = os.path.join(
-                DATA_PATH, "adni3_region_mapping.csv"
+        default_file = "adni3.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
+
         super().__init__(
-            hemisphere,
-            ADNIGraphBuilder(freesurfer_out_path, freesurfer_regions_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            in_view_idx,
-            out_view_idx,
-            device,
-            random_seed,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return ADNIGraphBuilder(os.path.join(DATA_PATH, "adni3_region_mapping.csv"))

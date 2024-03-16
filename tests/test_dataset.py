@@ -16,8 +16,8 @@ def test_simple_iteration() -> None:
     n_nodes = 34
     dataset_obj = OpenNeuroCannabisUsersDataset(hemisphere="left", timepoint="baseline")
     dataloader = PygDataLoader(dataset_obj, batch_size=1)
-    assert dataset_obj.n_nodes == n_nodes
-    assert dataset_obj.n_views == n_views
+    assert dataset_obj.n_nodes_src == n_nodes
+    assert dataset_obj.n_views_src == n_views
     src_graph, tgt_graph = next(iter(dataloader))
     assert src_graph.x is not None
     assert src_graph.edge_index is not None
@@ -55,31 +55,35 @@ def test_hemispheres() -> None:
 def test_openneuro_timepoints() -> None:
     """Test if openneuro dataset takes graphs on timepoints correctly."""
     data_length = 42
+    # Load only baseline with default atlas
     bl_dataset_obj = OpenNeuroCannabisUsersDataset(
         hemisphere="left", timepoint="baseline"
     )
     bl_dataloader = PygDataLoader(bl_dataset_obj, batch_size=1)
     assert len(bl_dataloader) == data_length
+    bl_src_graph, bl_tgt_graph = next(iter(bl_dataloader))
 
+    # Load only followup with default atlas
     fu_dataset_obj = OpenNeuroCannabisUsersDataset(
         hemisphere="left", timepoint="followup"
     )
     fu_dataloader = PygDataLoader(fu_dataset_obj, batch_size=1)
     assert len(fu_dataloader) == data_length
-
-    all_dataset_obj = OpenNeuroCannabisUsersDataset(hemisphere="left")
-    all_dataloader = PygDataLoader(all_dataset_obj, batch_size=1)
-    assert len(all_dataloader) == data_length * 2
-
     fu_src_graph, fu_tgt_graph = next(iter(fu_dataloader))
-    bl_src_graph, bl_tgt_graph = next(iter(bl_dataloader))
-    all_src_graph, all_tgt_graph = next(iter(all_dataloader))
-
-    assert all_src_graph.x is not None
-    assert all_tgt_graph.x is not None
 
     assert not torch.equal(bl_tgt_graph.x, fu_tgt_graph.x)
     assert not torch.equal(bl_src_graph.x, fu_src_graph.x)
+
+    # Load both with default atlas, baseline as the source and followup as the target.
+    all_dataset_obj = OpenNeuroCannabisUsersDataset(hemisphere="left")
+    all_dataloader = PygDataLoader(all_dataset_obj, batch_size=1)
+    assert len(all_dataloader) == data_length
+
+    all_src_graph_bl, all_tgt_graph_fu = next(iter(all_dataloader))
+
+    assert all_src_graph_bl.x is not None
+    assert all_tgt_graph_fu.x is not None
+    assert not torch.equal(all_src_graph_bl.x, all_tgt_graph_fu.x)
 
 
 def test_cross_validation() -> None:
@@ -95,20 +99,20 @@ def test_cross_validation() -> None:
     )
     assert tr_dataset.n_subj == len(tr_dataset.tr_indices)
     assert tr_dataset.n_subj == len(tr_dataset.subjects_labels)
-    assert tr_dataset.n_subj == len(tr_dataset.subjects_nodes)
-    assert tr_dataset.n_subj == len(tr_dataset.subjects_edges)
+    assert tr_dataset.n_subj == len(tr_dataset.subjects_nodes_src)
+    assert tr_dataset.n_subj == len(tr_dataset.subjects_edges_src)
     assert tr_dataset.n_subj == 16
 
     assert val_dataset.n_subj == len(val_dataset.val_indices)
     assert val_dataset.n_subj == len(val_dataset.subjects_labels)
-    assert val_dataset.n_subj == len(val_dataset.subjects_nodes)
-    assert val_dataset.n_subj == len(val_dataset.subjects_edges)
+    assert val_dataset.n_subj == len(val_dataset.subjects_nodes_src)
+    assert val_dataset.n_subj == len(val_dataset.subjects_edges_src)
     assert val_dataset.n_subj == 5
 
-    assert test_dataset.n_subj == len(test_dataset.unseen_data_indices)
+    assert test_dataset.n_subj == len(test_dataset.unseen_indices)
     assert test_dataset.n_subj == len(test_dataset.subjects_labels)
-    assert test_dataset.n_subj == len(test_dataset.subjects_nodes)
-    assert test_dataset.n_subj == len(test_dataset.subjects_edges)
+    assert test_dataset.n_subj == len(test_dataset.subjects_nodes_src)
+    assert test_dataset.n_subj == len(test_dataset.subjects_edges_src)
     assert test_dataset.n_subj == 21
 
     tr_set = set(tr_dataset.tr_indices)
@@ -123,20 +127,20 @@ def test_cross_validation() -> None:
     tr_ids = set(tr_dataset.subjects_ids)
     assert len(tr_ids.intersection(val_ids)) == 0
 
-    seen_set = set(test_dataset.seen_data_indices)
-    test_set = set(test_dataset.unseen_data_indices)
+    seen_set = set(test_dataset.seen_indices)
+    test_set = set(test_dataset.unseen_indices)
     assert len(test_set.intersection(seen_set)) == 0
 
     test_dataset = OpenNeuroCannabisUsersDataset(
         hemisphere="left", timepoint=None, mode="test"
     )
-    assert test_dataset.n_subj == len(test_dataset.unseen_data_indices)
+    assert test_dataset.n_subj == len(test_dataset.unseen_indices)
     assert test_dataset.n_subj == len(test_dataset.subjects_labels)
-    assert test_dataset.n_subj == len(test_dataset.subjects_nodes)
-    assert test_dataset.n_subj == len(test_dataset.subjects_edges)
-    assert test_dataset.n_subj == 42
-    seen_set = set(test_dataset.seen_data_indices)
-    test_set = set(test_dataset.unseen_data_indices)
+    assert test_dataset.n_subj == len(test_dataset.subjects_nodes_src)
+    assert test_dataset.n_subj == len(test_dataset.subjects_edges_src)
+    assert test_dataset.n_subj == 21
+    seen_set = set(test_dataset.seen_indices)
+    test_set = set(test_dataset.unseen_indices)
     assert len(test_set.intersection(seen_set)) == 0
 
     test_ids = set(test_dataset.subjects_ids)
@@ -208,7 +212,7 @@ def test_view_selection() -> None:
     n_views = 5
     n_nodes = 34
     tr_dataset = OpenNeuroCannabisUsersDataset(
-        hemisphere="left", timepoint="baseline", mode="train", in_view_idx=0
+        hemisphere="left", timepoint="baseline", mode="train", src_view_idx=0
     )
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
     src_graph, tgt_graph = next(iter(tr_dataloader))
@@ -221,8 +225,8 @@ def test_view_selection() -> None:
         hemisphere="left",
         timepoint="baseline",
         mode="train",
-        in_view_idx=0,
-        out_view_idx=3,
+        src_view_idx=0,
+        tgt_view_idx=3,
     )
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
     src_graph, tgt_graph = next(iter(tr_dataloader))
@@ -251,3 +255,89 @@ def test_adni_dataset() -> None:
     assert src_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
     assert tgt_graph.x.shape == (1, n_nodes, n_views)
     assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+
+
+def test_destrieux_atlas() -> None:
+    """Test if different atlases are loaded correctly."""
+    data_length = 42
+    n_nodes_src = 74
+    n_nodes_tgt = 74
+    n_views = 5
+    # ----------------------------------------------------------------------------
+    # Load only baseline with both source and target are destrieux.
+    # ----------------------------------------------------------------------------
+    atlas_dest_dest_dataset_obj = OpenNeuroCannabisUsersDataset(
+        hemisphere="left",
+        timepoint="baseline",
+        src_atlas="destrieux",
+        tgt_atlas="destrieux",
+    )
+    dest_dest_dataloader = PygDataLoader(atlas_dest_dest_dataset_obj, batch_size=1)
+    assert atlas_dest_dest_dataset_obj.n_nodes_src == n_nodes_src
+    assert atlas_dest_dest_dataset_obj.n_nodes_tgt == n_nodes_tgt
+    assert atlas_dest_dest_dataset_obj.n_views_src == n_views
+    assert len(dest_dest_dataloader) == data_length
+    dest_src_graph, dest_tgt_graph = next(iter(dest_dest_dataloader))
+
+    assert dest_src_graph.x is not None
+    assert dest_src_graph.edge_index is not None
+    assert dest_src_graph.edge_attr is not None
+    assert dest_src_graph.con_mat is not None
+    assert dest_src_graph.y is not None
+    assert dest_src_graph.x.shape == (1, n_nodes_src, n_views)
+    assert dest_src_graph.edge_index.shape == (2, n_nodes_src * n_nodes_src)
+    assert dest_src_graph.edge_attr.shape == (1, n_nodes_src * n_nodes_src, n_views)
+    assert dest_src_graph.con_mat.shape == (1, n_nodes_src, n_nodes_src, n_views)
+    assert dest_src_graph.y.shape == (1, 1)
+
+    assert dest_tgt_graph.x is not None
+    assert dest_tgt_graph.edge_index is not None
+    assert dest_tgt_graph.edge_attr is not None
+    assert dest_tgt_graph.con_mat is not None
+    assert dest_tgt_graph.y is not None
+    assert dest_tgt_graph.x.shape == (1, n_nodes_tgt, n_views)
+    assert dest_tgt_graph.edge_index.shape == (2, n_nodes_tgt * n_nodes_tgt)
+    assert dest_tgt_graph.edge_attr.shape == (1, n_nodes_tgt * n_nodes_tgt, n_views)
+    assert dest_tgt_graph.con_mat.shape == (1, n_nodes_tgt, n_nodes_tgt, n_views)
+    assert dest_tgt_graph.y.shape == (1, 1)
+
+
+def test_cross_atlas_loading() -> None:
+    """Test if source and target can be loaded from different atlases."""
+    data_length = 42
+    n_nodes_src = 34
+    n_nodes_tgt = 74
+    n_views = 5
+    # ----------------------------------------------------------------------------
+    # Load only baseline with default atlas as source and destrieux with target.
+    # ----------------------------------------------------------------------------
+    atlas_dkt_dest_dataset_obj = OpenNeuroCannabisUsersDataset(
+        hemisphere="left", timepoint="baseline", tgt_atlas="destrieux"
+    )
+    dkt_dest_dataloader = PygDataLoader(atlas_dkt_dest_dataset_obj, batch_size=1)
+    assert len(dkt_dest_dataloader) == data_length
+    dkt_src_graph, dest_tgt_graph = next(iter(dkt_dest_dataloader))
+
+    assert not torch.equal(dkt_src_graph.x, dest_tgt_graph.x)
+
+    assert dkt_src_graph.x is not None
+    assert dkt_src_graph.edge_index is not None
+    assert dkt_src_graph.edge_attr is not None
+    assert dkt_src_graph.con_mat is not None
+    assert dkt_src_graph.y is not None
+    assert dkt_src_graph.x.shape == (1, n_nodes_src, n_views)
+    assert dkt_src_graph.edge_index.shape == (2, n_nodes_src * n_nodes_src)
+    assert dkt_src_graph.edge_attr.shape == (1, n_nodes_src * n_nodes_src, n_views)
+    assert dkt_src_graph.con_mat.shape == (1, n_nodes_src, n_nodes_src, n_views)
+    assert dkt_src_graph.y.shape == (1, 1)
+
+    assert dest_tgt_graph.x is not None
+    assert dest_tgt_graph.edge_index is not None
+    assert dest_tgt_graph.edge_attr is not None
+    assert dest_tgt_graph.con_mat is not None
+    assert dest_tgt_graph.y is not None
+    assert dest_tgt_graph.x.shape == (1, n_nodes_tgt, n_views)
+    assert dest_tgt_graph.edge_index.shape == (2, n_nodes_tgt * n_nodes_tgt)
+    assert dest_tgt_graph.edge_attr.shape == (1, n_nodes_tgt * n_nodes_tgt, n_views)
+    assert dest_tgt_graph.con_mat.shape == (1, n_nodes_tgt, n_nodes_tgt, n_views)
+    assert dest_tgt_graph.y.shape == (1, 1)

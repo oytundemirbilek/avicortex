@@ -19,7 +19,7 @@ dependencies_lint: venv
 .PHONY:
 test: venv
 	source .venv/bin/activate
-	pytest
+	pytest --tb=native
 
 .PHONY:
 pre-commit: venv
