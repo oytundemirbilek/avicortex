@@ -65,8 +65,16 @@ Usage
 -----
 
 First, you need to have the output stats table from Freesurfer outputs. A collection of commands can be executed
-from fs_utils/stats2table.sh file. In later versions, we will provide Python utilities to extract these stats tables
-as well.
+from fs_utils/stats2table.sh file. We now provide Python utilities to extract these stats tables
+as well. You can use our Freesurfer StatsCollector class:
+
+>>> from avicortex.freesurfer.reader import StatsCollector
+>>> collector = StatsCollector(subjects_path="/freesurfer/execution/outputs/subjects/dir")
+>>> table = collector.collect_all()
+
+StatsCollector's collect_all function will collect all subjects, hemispheres, measurements of specified atlas into a
+pandas dataframe. Then you can save your table to a csv for later use. In later versions, we will provide a better
+maintained CLI.
 
 One class is provided for HCP Young Adult dataset but the you need to access data from:
 https://www.humanconnectome.org/study/hcp-young-adult
@@ -86,7 +94,7 @@ Moreover, you can select a feature set for the source and target graphs that wil
 Data(x=[batch_size, n_nodes, n_features], edge_attr=[batch_size, n_edges, n_features]). After the selection, you will have:
 Data(x=[batch_size, n_nodes, selection_idx], edge_attr=[batch_size, n_edges, selection_idx]). You can specify this while initializing:
 
->>> hcp_dataset_tr = HCPYoungAdultDataset(hemisphere="left", mode="train", freesurfer_out_path=freesurfer_stat_path, in_view_idx=0, out_view_idx=3)
+>>> hcp_dataset_tr = HCPYoungAdultDataset(hemisphere="left", mode="train", freesurfer_out_path=freesurfer_stat_path, src_view_idx=0, tgt_view_idx=3)
 
 Now you can put into a torch_geometric dataloader:
 
@@ -103,6 +111,26 @@ Output input_graph and target_graph will belong to the same patient. And you can
 
 This class might represent different conditions, such as different diseases, age groups, or gender. For example, in HCP Young Adult dataset, label
 represents patient gender.
+
+You can access the subject id of each graph to easily keep track of.
+
+>>> cls_label = target_graph.subject_id
+
+Another use case we cover is to atlas selections for both source and target. You can select different atlases for atlas-to-atlas mapping tasks.
+
+>>> hcp_dataset_tr = HCPYoungAdultDataset(
+>>>     hemisphere="left",
+>>>     mode="train",
+>>>     src_atlas="dktatlas",
+>>>     tgt_atlas="destrieux",
+>>>     src_atlas_path="/path/to/dktatlas/freesurfer/table.csv",
+>>>     tgt_atlas_path="/path/to/destrieux/freesurfer/table.csv"
+>>> )
+
+You can further select a device and specify a random seed for reproducibility.
+
+>>> hcp_dataset_tr = HCPYoungAdultDataset(hemisphere="left", mode="train", device="cpu", random_seed=9832)
+
 
 Contributing
 ------------

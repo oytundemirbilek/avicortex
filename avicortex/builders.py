@@ -36,7 +36,7 @@ class GraphBuilder:
     def load_atlas(
         self, fs_stats_atlas_path: str, atlas: str = "dktatlas"
     ) -> pd.Series:
-        """Get a list of cortical regions."""
+        """Get a list of cortical regions of specified atlas and read the stats file."""
         # Read freesurfer output table.
         self.fs_stats_atlas_path = fs_stats_atlas_path
         self.freesurfer_df = pd.read_csv(fs_stats_atlas_path)

@@ -270,6 +270,8 @@ class GraphDataset(Dataset):
         ----------
         subj_idx: int
             Index of the desired subject to construct its multigraph.
+        tgt: boolean
+            Whether the requested graph is a target or not.
 
         Returns
         -------
@@ -306,6 +308,8 @@ class GraphDataset(Dataset):
             Size of all data.
         fold_id: int
             Which cross validation fold to get the indices for.
+        random_seed: int
+            Random seed to be used for randomization.
 
         Returns
         -------
@@ -342,6 +346,10 @@ class GraphDataset(Dataset):
             Node feature matrix for the graph. Shaped (n_nodes, n_views)
         labels: numpy ndarray
             Subject-level labels. Only one label if batch size is 1.
+        subject_id: string
+            Subject ID attached to the graph.
+        tgt: boolean
+            Whether the requested graph is a target or not.
 
         Returns
         -------
