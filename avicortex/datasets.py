@@ -516,7 +516,6 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
-
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
         src_atlas: str = "dktatlas",
