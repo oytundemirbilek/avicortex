@@ -435,6 +435,8 @@ class HCPYoungAdultDataset(GraphDataset):
         tgt_atlas: str = "dktatlas",
         src_atlas_path: str | None = None,
         tgt_atlas_path: str | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         default_file = "hcp_young_adult.csv"
         src_atlas_path_ref = src_atlas_path
@@ -464,6 +466,8 @@ class HCPYoungAdultDataset(GraphDataset):
             tgt_atlas=tgt_atlas,
             src_atlas_path=src_atlas_path_ref,
             tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
 
     @classmethod
@@ -512,12 +516,15 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
+
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
         src_atlas: str = "dktatlas",
         tgt_atlas: str = "dktatlas",
         src_atlas_path: str | None = None,
         tgt_atlas_path: str | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         src_atlas_path_ref = src_atlas_path
         tgt_atlas_path_ref = tgt_atlas_path
@@ -569,6 +576,8 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
             tgt_atlas=tgt_atlas,
             src_atlas_path=src_atlas_path_ref,
             tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
 
     @classmethod
@@ -621,6 +630,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         tgt_atlas: str = "dktatlas",
         src_atlas_path: str | None = None,
         tgt_atlas_path: str | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ):
         default_file = "candishare_schizophrenia_dktatlas.csv"
         src_atlas_path_ref = src_atlas_path
@@ -649,6 +660,8 @@ class CandiShareSchizophreniaDataset(GraphDataset):
             tgt_atlas=tgt_atlas,
             src_atlas_path=src_atlas_path_ref,
             tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
 
     @classmethod
@@ -701,6 +714,8 @@ class ADNIAlzheimersDataset(GraphDataset):
         tgt_atlas: str = "dktatlas",
         src_atlas_path: str | None = None,
         tgt_atlas_path: str | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
     ) -> None:
         default_file = "adni3.csv"
         src_atlas_path_ref = src_atlas_path
@@ -730,6 +745,8 @@ class ADNIAlzheimersDataset(GraphDataset):
             tgt_atlas=tgt_atlas,
             src_atlas_path=src_atlas_path_ref,
             tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
         )
 
     @classmethod
