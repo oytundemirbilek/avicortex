@@ -59,15 +59,16 @@ class GraphDataset(Dataset):
     def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
-        gbuilder: GraphBuilder,
         mode: str = "inference",
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
-        src_atlas: str = "dkt",
-        tgt_atlas: str = "dkt",
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
         device: str | torch.device | None = None,
         random_seed: int = 0,
     ):
@@ -92,17 +93,19 @@ class GraphDataset(Dataset):
         self.n_folds = data_split_ratio[0] + data_split_ratio[1]
         self.src_view_idx = src_view_idx
         self.tgt_view_idx = tgt_view_idx
+        self.src_atlas_path = src_atlas_path
+        self.tgt_atlas_path = tgt_atlas_path
         self.src_atlas = src_atlas
         self.tgt_atlas = tgt_atlas
         self.current_fold = current_fold
         self.data_split_ratio = data_split_ratio
-        self.gbuilder = gbuilder
-        self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
-        self.init_arrange_splits()
-        self.subjects_labels = self.gbuilder.get_labels()
+        self.gbuilder = self.get_graph_builder()
         self.subjects_nodes_src, self.subjects_edges_src = np.array([]), np.array([])
         self.subjects_nodes_tgt, self.subjects_edges_tgt = np.array([]), np.array([])
         self.init_load_atlases()
+        self.subjects_ids = self.gbuilder.get_subject_ids().to_numpy()
+        self.init_arrange_splits()
+        self.subjects_labels = self.gbuilder.get_labels()
 
         if self.mode in {"train", "validation"}:
             self.seen_subjects_labels = self.subjects_labels[self.seen_indices]
@@ -140,7 +143,13 @@ class GraphDataset(Dataset):
                 "mode should be 'train', 'validation', 'test' or 'inference'"
             )
 
-        self.n_subj, self.n_nodes, self.n_views = self.subjects_nodes_src.shape
+        self.n_subj, self.n_nodes_src, self.n_views_src = self.subjects_nodes_src.shape
+        self.n_subj, self.n_nodes_tgt, self.n_views_tgt = self.subjects_nodes_tgt.shape
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return GraphBuilder()
 
     def init_arrange_splits(self) -> None:
         """Assign indices to the train-validation-test splits."""
@@ -176,7 +185,13 @@ class GraphDataset(Dataset):
     def init_load_atlases(self) -> None:
         """Load node and edge feature sets based on the source and target atlases."""
         # Source atlas
-        self.gbuilder.load_atlas(atlas_path=None, atlas=self.src_atlas)
+        if self.src_atlas_path is None:
+            raise ValueError("Source atlas path is not provided.")
+        if self.tgt_atlas_path is None:
+            raise ValueError("Target atlas path is not provided.")
+        self.gbuilder.load_atlas(
+            fs_stats_atlas_path=self.src_atlas_path, atlas=self.src_atlas
+        )
         (self.subjects_nodes_src, self.subjects_edges_src) = self.gbuilder.construct(
             hem=self.hemisphere
         )
@@ -184,7 +199,9 @@ class GraphDataset(Dataset):
         self.subjects_edges_src = self.subjects_edges_src.transpose((2, 0, 1, 3))
 
         # Target atlas
-        self.gbuilder.load_atlas(atlas_path=None, atlas=self.tgt_atlas)
+        self.gbuilder.load_atlas(
+            fs_stats_atlas_path=self.tgt_atlas_path, atlas=self.tgt_atlas
+        )
         (self.subjects_nodes_tgt, self.subjects_edges_tgt) = self.gbuilder.construct(
             hem=self.hemisphere
         )
@@ -265,6 +282,7 @@ class GraphDataset(Dataset):
                 self.subjects_nodes_tgt[subj_idx],
                 self.subjects_labels[subj_idx : subj_idx + 1],
                 self.subjects_ids[subj_idx],
+                tgt,
             )
         else:
             return self.create_graph_obj(
@@ -272,6 +290,7 @@ class GraphDataset(Dataset):
                 self.subjects_nodes_src[subj_idx],
                 self.subjects_labels[subj_idx : subj_idx + 1],
                 self.subjects_ids[subj_idx],
+                tgt,
             )
 
     @staticmethod
@@ -310,6 +329,7 @@ class GraphDataset(Dataset):
         node_features: np.ndarray,
         labels: np.ndarray,
         subject_id: str,
+        tgt: bool = True,
     ) -> PygData:
         """
         Combine edges, nodes and labels to create a graph object for torch_geometric.
@@ -329,16 +349,21 @@ class GraphDataset(Dataset):
             Graph object designed to be used in the torch_geometric functions.
         """
         # Edge weights, ensure shape.
-        edges = adj_matrix.reshape((self.n_nodes * self.n_nodes, self.n_views))
+        n_nodes = self.n_nodes_src
+        n_views = self.n_views_src
+        if tgt:
+            n_nodes = self.n_nodes_tgt
+            n_views = self.n_views_tgt
+        edges = adj_matrix.reshape((n_nodes * n_nodes, n_views))
         # Torch operations execute faster to create source-destination pairs.
         # [0,1,2,3,0,1,2,3...]
-        dst_index = torch.arange(self.n_nodes).repeat(self.n_nodes)
+        dst_index = torch.arange(n_nodes).repeat(n_nodes)
         # [0,0,0,0,1,1,1,1...]
         src_index = (
-            torch.arange(self.n_nodes)
-            .expand(self.n_nodes, self.n_nodes)
+            torch.arange(n_nodes)
+            .expand(n_nodes, n_nodes)
             .transpose(0, 1)
-            .reshape(self.n_nodes * self.n_nodes)
+            .reshape(n_nodes * n_nodes)
         )
         # COO Matrix for index src-dst pairs. And add batch dimensions.
         edge_index = torch.stack([src_index, dst_index]).to(self.device)
@@ -360,8 +385,9 @@ class GraphDataset(Dataset):
         """Dunder function to return string representation of the dataset."""
         return (
             f"{self.__class__.__name__} multigraph dataset ({self.mode}) {self.hemisphere} hemisphere with"
-            f" n_views={self.n_views}, n_nodes={self.n_nodes}, n_subjects={self.n_subj}, "
-            f"current fold:{self.current_fold + 1}/{self.n_folds}"
+            f", n_subjects={self.n_subj}, current fold:{self.current_fold + 1}/{self.n_folds}"
+            f", n_views_source={self.n_views_src}, n_nodes_source={self.n_nodes_src}"
+            f", n_views_target={self.n_views_tgt}, n_nodes_target={self.n_nodes_tgt}"
         )
 
 
@@ -395,7 +421,7 @@ class HCPYoungAdultDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -405,19 +431,45 @@ class HCPYoungAdultDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
     ):
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(DATA_PATH, "hcp_young_adult.csv")
+        default_file = "hcp_young_adult.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path_ref is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path_ref is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
         super().__init__(
-            hemisphere,
-            HCPGraphBuilder(freesurfer_out_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            src_view_idx,
-            tgt_view_idx,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return HCPGraphBuilder()
 
 
 class OpenNeuroCannabisUsersDataset(GraphDataset):
@@ -451,7 +503,7 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -462,35 +514,67 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
     ):
-        if freesurfer_out_path is None:
-            if timepoint is None:
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_all_dktatlas.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if timepoint is None:
+            if src_atlas_path_ref is None:
+                src_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_baseline_{src_atlas}.csv"
                 )
-            elif timepoint == "baseline":
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_baseline_dktatlas.csv"
+            if tgt_atlas_path_ref is None:
+                tgt_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_followup_{tgt_atlas}.csv"
                 )
-            elif timepoint == "followup":
-                freesurfer_out_path = os.path.join(
-                    DATA_PATH, "openneuro_followup_dktatlas.csv"
+        else:
+            if src_atlas_path_ref is None:
+                src_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_{timepoint}_{src_atlas}.csv"
+                )
+            if tgt_atlas_path_ref is None:
+                tgt_atlas_path_ref = os.path.join(
+                    DATA_PATH, f"openneuro_{timepoint}_{tgt_atlas}.csv"
                 )
             else:
-                raise ValueError(
-                    "timepoint should be one of: 'baseline', 'followup' or None."
+                warnings.warn(
+                    "Data will be loaded from the provided paths, even if timepoint is set differently.",
+                    UserWarning,
+                    stacklevel=2,
                 )
-        include_all = freesurfer_out_path.endswith("openneuro_all_dktatlas.csv")
+                src_atlas_path_ref = src_atlas_path
+                tgt_atlas_path_ref = tgt_atlas_path
+
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
+
         super().__init__(
-            hemisphere,
-            OpenNeuroGraphBuilder(freesurfer_out_path, include_all),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            src_view_idx,
-            tgt_view_idx,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return OpenNeuroGraphBuilder()
 
 
 class CandiShareSchizophreniaDataset(GraphDataset):
@@ -523,7 +607,7 @@ class CandiShareSchizophreniaDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
@@ -533,21 +617,44 @@ class CandiShareSchizophreniaDataset(GraphDataset):
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
     ):
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(
-                DATA_PATH, "candishare_schizophrenia_dktatlas.csv"
+        default_file = "candishare_schizophrenia_dktatlas.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path_ref is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path_ref is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
         super().__init__(
-            hemisphere,
-            CandiShareGraphBuilder(freesurfer_out_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            src_view_idx,
-            tgt_view_idx,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return CandiShareGraphBuilder()
 
 
 class ADNIAlzheimersDataset(GraphDataset):
@@ -580,31 +687,52 @@ class ADNIAlzheimersDataset(GraphDataset):
 
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0915, PLR0913, PLR0917
         self,
         hemisphere: str,
         freesurfer_out_path: str | None = None,
-        freesurfer_regions_path: str | None = None,
         mode: str = "inference",
         n_folds: int | None = None,
         current_fold: int = 0,
         data_split_ratio: tuple[int, int, int] = (4, 1, 5),
         src_view_idx: int | None = None,
         tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
     ) -> None:
-        if freesurfer_out_path is None:
-            freesurfer_out_path = os.path.join(DATA_PATH, "adni3.csv")
-        if freesurfer_regions_path is None:
-            freesurfer_regions_path = os.path.join(
-                DATA_PATH, "adni3_region_mapping.csv"
+        default_file = "adni3.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
             )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
+
         super().__init__(
-            hemisphere,
-            ADNIGraphBuilder(freesurfer_out_path, freesurfer_regions_path),
-            mode,
-            n_folds,
-            current_fold,
-            data_split_ratio,
-            src_view_idx,
-            tgt_view_idx,
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
         )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return ADNIGraphBuilder(os.path.join(DATA_PATH, "adni3_region_mapping.csv"))

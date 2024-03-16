@@ -14,8 +14,10 @@ def test_builder_init_timepoints() -> None:
     openneuro_bl_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
     openneuro_fu_path = os.path.join(DATA_PATH, "openneuro_followup_dktatlas.csv")
 
-    gbuilder_bl = OpenNeuroGraphBuilder(openneuro_bl_path)
-    gbuilder_fu = OpenNeuroGraphBuilder(openneuro_fu_path)
+    gbuilder_bl = OpenNeuroGraphBuilder()
+    gbuilder_bl.load_atlas(openneuro_bl_path)
+    gbuilder_fu = OpenNeuroGraphBuilder()
+    gbuilder_fu.load_atlas(openneuro_fu_path)
 
     assert gbuilder_bl.column_pattern is not None
     assert gbuilder_fu.column_pattern is not None
@@ -37,7 +39,8 @@ def test_builder_labels() -> None:
     """Test if graph builder gets labels correctly."""
     openneuro_bl_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
 
-    gbuilder = OpenNeuroGraphBuilder(openneuro_bl_path)
+    gbuilder = OpenNeuroGraphBuilder()
+    gbuilder.load_atlas(openneuro_bl_path)
     labels = gbuilder.get_labels()
     assert labels is not None
     assert labels.shape == (42,)
@@ -47,7 +50,8 @@ def test_builder_construct_graph() -> None:
     """Test if graph builder class initialization."""
     openneuro_bl_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
 
-    gbuilder = OpenNeuroGraphBuilder(openneuro_bl_path)
+    gbuilder = OpenNeuroGraphBuilder()
+    gbuilder.load_atlas(openneuro_bl_path)
     nodes, edges = gbuilder.construct(hem="left")
     assert nodes is not None
     assert edges is not None
@@ -59,7 +63,8 @@ def test_builder_region_check() -> None:
     """Test if graph builder checks regions correctly."""
     openneuro_bl_path = os.path.join(DATA_PATH, "openneuro_baseline_dktatlas.csv")
 
-    gbuilder = OpenNeuroGraphBuilder(openneuro_bl_path)
+    gbuilder = OpenNeuroGraphBuilder()
+    gbuilder.load_atlas(openneuro_bl_path)
     df_single_view = pd.DataFrame(
         columns=["lh_bankssts_area", "lh_caudalanteriorcingulate_area"]
     )

@@ -23,27 +23,23 @@ class GraphBuilder:
     >>> labels = gbuilder.get_labels()
     """
 
-    def __init__(self, fs_out_path: str) -> None:
-        self.fs_out_path = fs_out_path
+    def __init__(self) -> None:
         # Pattern used to name columns, usually: hemisphere_region_view
         self.column_pattern = r"{}_.*_{}$"
         self.region_name_pos_in_pattern = 1
         self.region_names_column = "Alias_HCP"
-        # All regions defined in DKT-Atlas
-        self.load_atlas()
         # Define view names to look for.
         self.views = ["meancurv", "gauscurv", "thickness", "area", "volume"]
         self.hemispheres = "lh", "rh"
         self.label_encoding = {"M": 0, "F": 1}
 
     def load_atlas(
-        self, atlas_path: str | None = None, atlas: str = "dkt"
+        self, fs_stats_atlas_path: str, atlas: str = "dktatlas"
     ) -> pd.Series:
         """Get a list of cortical regions."""
         # Read freesurfer output table.
-        if atlas_path is None:
-            atlas_path = self.fs_out_path
-        self.freesurfer_df = pd.read_csv(atlas_path)
+        self.fs_stats_atlas_path = fs_stats_atlas_path
+        self.freesurfer_df = pd.read_csv(fs_stats_atlas_path)
         regions_path = os.path.join(ROOT_PATH, "data", f"region_names_{atlas}.csv")
         self.atlas_regions = pd.read_csv(regions_path)[self.region_names_column]
 
@@ -77,6 +73,7 @@ class GraphBuilder:
             col.lower().split("_")[self.region_name_pos_in_pattern] not in regions
             for col in single_view.columns
         ]
+
         # missing_regions = list(set(regions) - set(found_regions))
         # false_regions = list(set(found_regions) - set(regions))
         # print(missing_regions)
@@ -232,7 +229,7 @@ class GraphBuilder:
         if supress_node_features:
             nodes = np.ones_like(nodes)
         if save:
-            out_path = self.fs_out_path.strip("vsc.")
+            out_path = self.fs_stats_atlas_path.strip("vsc.")
             np.save(f"{out_path}_{hem}_nodes.npy", nodes)
             np.save(f"{out_path}_{hem}_edges.npy", edges)
 
@@ -279,8 +276,8 @@ class GraphBuilder:
 class HCPGraphBuilder(GraphBuilder):
     """GraphBuilder for HCP Young Adult dataset."""
 
-    def __init__(self, fs_out_path: str) -> None:
-        super().__init__(fs_out_path)
+    def __init__(self) -> None:
+        super().__init__()
         # Overload pattern.
         self.column_pattern = r"FS_{}_.*_{}$"
         # Overload hemisphere abbreviations.
@@ -304,8 +301,8 @@ class HCPGraphBuilder(GraphBuilder):
 class OpenNeuroGraphBuilder(GraphBuilder):
     """GraphBuilder for Openneuro Cannabis Users dataset baseline and followup."""
 
-    def __init__(self, fs_out_path: str, include_all: bool = False) -> None:
-        super().__init__(fs_out_path)
+    def __init__(self, include_all: bool = False) -> None:
+        super().__init__()
         # Overload label look up dictionary.
         self.label_encoding = {"HC": 0, "CB": 1}
         # OpenNeuro dataset comes with a metadata content which also includes labels.
@@ -332,8 +329,8 @@ class OpenNeuroGraphBuilder(GraphBuilder):
 class CandiShareGraphBuilder(GraphBuilder):
     """GraphBuilder for Candi Share Schizophrenia Bulletin 2008 dataset."""
 
-    def __init__(self, fs_out_path: str) -> None:
-        super().__init__(fs_out_path)
+    def __init__(self) -> None:
+        super().__init__()
         # Overload label look up dictionary.
         self.label_encoding = {"HC": 0, "BPDwoPsy": 1, "BPDwPsy": 2, "SS": 3}
 
@@ -355,11 +352,9 @@ class CandiShareGraphBuilder(GraphBuilder):
 class ADNIGraphBuilder(GraphBuilder):
     """GraphBuilder for ADNI datasets."""
 
-    def __init__(
-        self, fs_out_path: str, region_mapping_path: str | None = None
-    ) -> None:
+    def __init__(self, region_mapping_path: str | None = None) -> None:
         self.region_mapping_path = region_mapping_path
-        super().__init__(fs_out_path)
+        super().__init__()
         self.views = ["Thickness Average", "Surface Area", "Cortical Volume"]
         self.region_names_column = "Alias_ADNI"
         self.hemispheres = "Left", "Right"
@@ -379,13 +374,12 @@ class ADNIGraphBuilder(GraphBuilder):
         return df.rename(columns=col_mapper)
 
     def load_atlas(
-        self, atlas_path: str | None = None, atlas: str = "dkt"
+        self, fs_stats_atlas_path: str, atlas: str = "dktatlas"
     ) -> pd.Series:
         """Get a list of cortical regions."""
         # Read freesurfer output table.
-        if atlas_path is None:
-            atlas_path = self.fs_out_path
-        self.freesurfer_df = pd.read_csv(atlas_path)
+        self.fs_stats_atlas_path = fs_stats_atlas_path
+        self.freesurfer_df = pd.read_csv(fs_stats_atlas_path)
         regions_path = os.path.join(ROOT_PATH, "data", f"region_names_{atlas}.csv")
         self.atlas_regions = pd.read_csv(regions_path)[self.region_names_column]
 
