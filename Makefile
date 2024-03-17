@@ -7,10 +7,10 @@ venv: .venv/bin/activate
 	python -m venv .venv
 	if [ "$(OS)" = "Windows_NT" ]; then \
 		echo "Operating system is Windows"; \
-		.venv/Scripts/Activate.ps1
+		.venv/Scripts/Activate.ps1; \
 	else \
 		echo "Operating system is not Windows"; \
-		source .venv/bin/activate
+		source .venv/bin/activate; \
 	fi
 	python -m pip install --upgrade pip
 
