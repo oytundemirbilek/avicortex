@@ -5,7 +5,13 @@ venv: .venv/bin/activate
 .ONESHELL:
 .venv/bin/activate:
 	python -m venv .venv
-	source .venv/bin/activate
+	ifeq ($(OS),Windows_NT)
+        @echo "Operating system is Windows"
+		.venv/Scripts/Activate.ps1
+    else
+        @echo "Operating system is not Windows"
+		source .venv/bin/activate
+    endif
 	python -m pip install --upgrade pip
 
 .PHONY:
