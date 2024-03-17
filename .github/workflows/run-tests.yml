@@ -42,11 +42,13 @@ jobs:
           restore-keys: cache-venv-
 
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
           make dependencies_test
 
       - name: Test with pytest
+        shell: bash
         run: make test
 
   run-unittests-os:
@@ -74,11 +76,13 @@ jobs:
           restore-keys: cache-venv-
 
       - name: Install dependencies
+        shell: bash
         run: |
           python -m pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
           make dependencies_test
 
       - name: Test with pytest
+        shell: bash
         run: make test
 
   run-unittests-pytorch:
@@ -107,6 +111,7 @@ jobs:
           restore-keys: cache-venv-
 
       - name: Install dependencies
+        shell: bash
         run: |
           if [ ${{ matrix.torch-vers }} == "latest" ]; then
             python -m pip install torch --upgrade --extra-index-url https://download.pytorch.org/whl/cpu
@@ -116,4 +121,5 @@ jobs:
           make dependencies_test
 
       - name: Test with pytest
+        shell: bash
         run: make test
