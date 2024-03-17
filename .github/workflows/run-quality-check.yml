@@ -46,7 +46,9 @@ jobs:
           restore-keys: cache-precommit-
 
       - name: Install dependencies
-        run: make dependencies_lint
+        run: |
+          python -m pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
+          make dependencies_lint
 
       - name: Run precommit
         run: make pre-commit-ci
