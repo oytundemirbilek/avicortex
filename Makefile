@@ -6,12 +6,12 @@ venv: .venv/bin/activate
 .venv/bin/activate:
 	python -m venv .venv
 	ifeq ($(OS),Windows_NT)
-        @echo "Operating system is Windows"
+		@echo "Operating system is Windows"
 		.venv/Scripts/Activate.ps1
-    else
-        @echo "Operating system is not Windows"
+	else
+		@echo "Operating system is not Windows"
 		source .venv/bin/activate
-    endif
+	endif
 	python -m pip install --upgrade pip
 
 .PHONY:
