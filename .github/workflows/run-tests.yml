@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 jobs:
-  run-unittests:
+  run-unittests-python:
 
     runs-on: ubuntu-latest
     strategy:
@@ -43,6 +43,72 @@ jobs:
 
       - name: Install dependencies
         run: make dependencies_test
+
+      - name: Test with pytest
+        run: make test
+
+  run-unittests-os:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macOS-latest, ubuntu-latest]
+
+    steps:
+
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Restore cache venv
+        uses: actions/cache/restore@v4
+        id: restore-cache-venv
+        with:
+          path: ${{ env.pythonLocation }}
+          key: cache-venv-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: cache-venv-
+
+      - name: Install dependencies
+        run: make dependencies_test
+
+      - name: Test with pytest
+        run: make test
+
+  run-unittests-pytorch:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pytorch-version: ['1.9.1', '1.10.2', '1.11.0', '1.12.1', '1.13', 'latest']
+
+    steps:
+
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Restore cache venv
+        uses: actions/cache/restore@v4
+        id: restore-cache-venv
+        with:
+          path: ${{ env.pythonLocation }}
+          key: cache-venv-${{ env.pythonLocation }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: cache-venv-
+
+      - name: Install dependencies
+        run: |
+          if [ ${{ matrix.pytorch-version }} == "latest" ]; then
+            python -m pip install torch
+          else
+            python -m pip install torch==${{ matrix.pytorch-version }}
+          fi
+          make dependencies_test
 
       - name: Test with pytest
         run: make test
