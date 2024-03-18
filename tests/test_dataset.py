@@ -5,7 +5,13 @@ import os
 import torch
 from torch_geometric.loader import DataLoader as PygDataLoader
 
-from avicortex.datasets import ADNIAlzheimersDataset, OpenNeuroCannabisUsersDataset
+from avicortex.datasets import (
+    ADNIAlzheimersDataset,
+    CandiShareSchizophreniaDataset,
+    HCPYoungAdultDataset,
+    OASISCrossSectionalDataset,
+    OpenNeuroCannabisUsersDataset,
+)
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "mock_datasets")
 
@@ -245,7 +251,64 @@ def test_adni_dataset() -> None:
     n_nodes = 34
     tr_dataset = ADNIAlzheimersDataset(
         hemisphere="left",
-        freesurfer_out_path=os.path.join(DATA_PATH, "adni", "adni_mock.csv"),
+        freesurfer_out_path=os.path.join(DATA_PATH, "adni_mock.csv"),
+    )
+    assert len(tr_dataset) == n_samples
+    tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
+    src_graph, tgt_graph = next(iter(tr_dataloader))
+
+    assert src_graph.x.shape == (1, n_nodes, n_views)
+    assert src_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+    assert tgt_graph.x.shape == (1, n_nodes, n_views)
+    assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+
+
+def test_hcp_dataset() -> None:
+    """Test if ADNI dataset works correctly."""
+    n_views = 5
+    n_samples = 5
+    n_nodes = 34
+    tr_dataset = HCPYoungAdultDataset(
+        hemisphere="left",
+        freesurfer_out_path=os.path.join(DATA_PATH, "hcp_mock.csv"),
+    )
+    assert len(tr_dataset) == n_samples
+    tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
+    src_graph, tgt_graph = next(iter(tr_dataloader))
+
+    assert src_graph.x.shape == (1, n_nodes, n_views)
+    assert src_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+    assert tgt_graph.x.shape == (1, n_nodes, n_views)
+    assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+
+
+def test_candi_dataset() -> None:
+    """Test if ADNI dataset works correctly."""
+    n_views = 5
+    n_samples = 5
+    n_nodes = 34
+    tr_dataset = CandiShareSchizophreniaDataset(
+        hemisphere="left",
+        freesurfer_out_path=os.path.join(DATA_PATH, "candi_mock.csv"),
+    )
+    assert len(tr_dataset) == n_samples
+    tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
+    src_graph, tgt_graph = next(iter(tr_dataloader))
+
+    assert src_graph.x.shape == (1, n_nodes, n_views)
+    assert src_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+    assert tgt_graph.x.shape == (1, n_nodes, n_views)
+    assert tgt_graph.edge_attr.shape == (1, n_nodes * n_nodes, n_views)
+
+
+def test_oasis_dataset() -> None:
+    """Test if ADNI dataset works correctly."""
+    n_views = 5
+    n_samples = 5
+    n_nodes = 34
+    tr_dataset = OASISCrossSectionalDataset(
+        hemisphere="left",
+        freesurfer_out_path=os.path.join(DATA_PATH, "oasis_mock.csv"),
     )
     assert len(tr_dataset) == n_samples
     tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
