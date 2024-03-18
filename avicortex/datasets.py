@@ -17,6 +17,7 @@ from avicortex.builders import (
     CandiShareGraphBuilder,
     GraphBuilder,
     HCPGraphBuilder,
+    OASISGraphBuilder,
     OpenNeuroGraphBuilder,
 )
 
@@ -403,11 +404,12 @@ class HCPYoungAdultDataset(GraphDataset):
     """
     Class to handle HCP Young Adult Dataset specificities.
 
+    Access from: https://www.humanconnectome.org/study/hcp-young-adult/
     HCP Young Adult dataset:
     - 2 classes (male / female)
     - 1113 subjects
     - 34 nodes
-    - 4 views
+    - 5 views
 
     Examples
     --------
@@ -488,12 +490,13 @@ class OpenNeuroCannabisUsersDataset(GraphDataset):
     """
     Class to handle Openneuro cannabis users dataset specificities.
 
+    Access from: https://openneuro.org/datasets/ds000174/
     This dataset has 2 scans per subject, at baseline and a 3 years follow up:
     - 2 classes (not user / cannabis user)
     - 42 subjects
-    - 31 nodes
-    - 4 views
-    - 2 timepoints
+    - 34 nodes
+    - 5 views
+    - 2 timepoints (baseline and followup)
 
     Examples
     --------
@@ -597,11 +600,12 @@ class CandiShareSchizophreniaDataset(GraphDataset):
     """
     Class to handle Candi Share Schizophrenia Bulletin 2008 Dataset specificities.
 
+    Access from: https://www.nitrc.org/projects/cs_schizbull08/
     This dataset includes:
     - 4 classes (healthy / bipolar without psychosis / bipolar with psychosis / schizophrenia)
-    - 103 subjects
-    - 31 nodes
-    - 4 views
+    - 94 subjects
+    - 34 nodes
+    - 5 views
 
     Examples
     --------
@@ -681,18 +685,19 @@ class ADNIAlzheimersDataset(GraphDataset):
     """
     Class to handle Alzheimers Disease Neuroimaging Initiative (ADNI) dataset specificities.
 
-    This dataset has 2 scans per subject:
-    - 2 classes (not user / cannabis user)
-    - ... subjects
+    Access from: https://adni.loni.usc.edu/data-samples/access-data/
+    This dataset contains:
+    - no classes (will be updated)
+    - 1237 subjects
     - 34 nodes
-    - 4 views
+    - 3 views
 
     Examples
     --------
     Data loading with batches:
 
     >>> from torch_geometric.loader import DenseDataLoader as PygDataLoader
-    >>> tr_dataset = OpenNeuroCannabisUsersDataset(hemisphere="left", mode="train", timepoint="baseline")
+    >>> tr_dataset = ADNIAlzheimersDataset(hemisphere="left", mode="train")
     >>> tr_dataloader = PygDataLoader(tr_dataset, batch_size=5)
     >>> for g in tr_dataloader:
     ...     print(g)
@@ -700,7 +705,7 @@ class ADNIAlzheimersDataset(GraphDataset):
     Data loading without batching (no batch dimension):
 
     >>> from torch_geometric.loader import DataLoader as PygDataLoader
-    >>> tr_dataset = OpenNeuroCannabisUsersDataset(hemisphere="left", mode="train", timepoint="followup")
+    >>> tr_dataset = ADNIAlzheimersDataset(hemisphere="left", mode="train")
     >>> tr_dataloader = PygDataLoader(tr_dataset, batch_size=1)
     >>> for g in tr_dataloader:
     ...     print(g)
@@ -760,3 +765,70 @@ class ADNIAlzheimersDataset(GraphDataset):
     def get_graph_builder(cls) -> GraphBuilder:
         """Get graph builder specific to the dataset."""
         return ADNIGraphBuilder(os.path.join(DATA_PATH, "adni3_region_mapping.csv"))
+
+
+class OASISCrossSectionalDataset(GraphDataset):
+    """
+    Class to handle Open Access Series of Imaging Studies (OASIS) dataset.
+
+    Access from: https://www.oasis-brains.org/
+    This dataset contains:
+
+    - 2 classes (male / female)
+    - 425 subjects
+    - 34 nodes (DKT-Atlas)
+    - 5 views
+    """
+
+    def __init__(
+        self,
+        hemisphere: str,
+        freesurfer_out_path: str | None = None,
+        mode: str = "inference",
+        n_folds: int | None = None,
+        current_fold: int = 0,
+        data_split_ratio: tuple[int, int, int] = (4, 1, 5),
+        src_view_idx: int | None = None,
+        tgt_view_idx: int | None = None,
+        src_atlas: str = "dktatlas",
+        tgt_atlas: str = "dktatlas",
+        src_atlas_path: str | None = None,
+        tgt_atlas_path: str | None = None,
+        device: str | torch.device | None = None,
+        random_seed: int = 0,
+    ):
+        default_file = "oasis1_dktatlas.csv"
+        src_atlas_path_ref = src_atlas_path
+        tgt_atlas_path_ref = tgt_atlas_path
+        if src_atlas_path_ref is None:
+            src_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if tgt_atlas_path_ref is None:
+            tgt_atlas_path_ref = os.path.join(DATA_PATH, default_file)
+        if freesurfer_out_path is not None:
+            warnings.warn(
+                "freesurfer_out_path is deprecated, use src_atlas_path and tgt_atlas_path instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            src_atlas_path_ref = freesurfer_out_path
+            tgt_atlas_path_ref = freesurfer_out_path
+        super().__init__(
+            hemisphere=hemisphere,
+            mode=mode,
+            n_folds=n_folds,
+            current_fold=current_fold,
+            data_split_ratio=data_split_ratio,
+            src_view_idx=src_view_idx,
+            tgt_view_idx=tgt_view_idx,
+            src_atlas=src_atlas,
+            tgt_atlas=tgt_atlas,
+            src_atlas_path=src_atlas_path_ref,
+            tgt_atlas_path=tgt_atlas_path_ref,
+            device=device,
+            random_seed=random_seed,
+        )
+
+    @classmethod
+    def get_graph_builder(cls) -> GraphBuilder:
+        """Get graph builder specific to the dataset."""
+        return OASISGraphBuilder()
