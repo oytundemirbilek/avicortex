@@ -434,3 +434,25 @@ class ADNIGraphBuilder(GraphBuilder):
             Pandas column that subject IDs are located.
         """
         return self.freesurfer_df["IMAGEUID"].astype("str")
+
+
+class OASISGraphBuilder(GraphBuilder):
+    """GraphBuilder for OASIS Datasets."""
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.label_encoding = {"M": 0, "F": 1}
+        meta_path = os.path.join(ROOT_PATH, "data", "oasis_cross-sectional.csv")
+        self.meta_data = pd.read_csv(meta_path)
+
+    def get_labels(self) -> np.ndarray:
+        """
+        Get labels from freesurfer output table.
+
+        Returns
+        -------
+        numpy ndarray
+            Labels encoded as integers in a numpy array.
+        """
+        return self.meta_data["M/F"].map(self.label_encoding).values

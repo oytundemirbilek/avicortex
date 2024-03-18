@@ -77,7 +77,9 @@ class StatsCollector:
         for idx, measure in enumerate(self.measurements):
             stats = self.collect_measurement(measure, hem)
             if idx != 0:
-                stats = stats.drop(["eTIV", "BrainSegVolNotVent"], axis=1)
+                stats = stats.drop(
+                    ["eTIV", "BrainSegVolNotVent"], axis=1, errors="ignore"
+                )
             data_list.append(stats)
 
         df = (
@@ -94,7 +96,9 @@ class StatsCollector:
                 [
                     self.collect_hemisphere("lh"),
                     self.collect_hemisphere("rh").drop(
-                        ["Subject ID", "eTIV", "BrainSegVolNotVent"], axis=1
+                        ["Subject ID", "eTIV", "BrainSegVolNotVent"],
+                        axis=1,
+                        errors="ignore",
                     ),
                 ],
                 axis=1,
