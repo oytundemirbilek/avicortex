@@ -35,6 +35,31 @@ def test_stable_dict() -> None:
     sdict.update(other_dict)
     assert "mock_key10" in sdict
     assert sdict["mock_key1"] == 10.0
+    sdict.clear()
+
+    sdict = StableDict({"mock_key1": 5.0, "mock_key2": 10.0, "mock_key3": 0.0})
+    first_elem_popped = sdict.popitem()
+    assert first_elem_popped == ("mock_key3", 0.0)
+    selected_elem_popped = sdict.pop("mock_key1")
+    assert selected_elem_popped == 5.0
+    sdict.clear()
+
+    sdict = StableDict([("mock_key1", 5.0), ("mock_key2", 10.0)])
+    first_elem = next(iter(sdict))
+    assert first_elem == "mock_key1"
+
+    other_seq_tuples = [("mock_key10", 100.0), ("mock_key2", 50.0)]
+    sdict.update(other_seq_tuples)
+    assert "mock_key10" in sdict
+    assert "mock_key2" in sdict
+    assert sdict["mock_key2"] == 50.0
+    assert sdict["mock_key10"] == 100.0
+    del sdict["mock_key2"]
+    del sdict["mock_key10"]
+    assert "mock_key10" not in sdict
+    assert "mock_key2" not in sdict
+    repr(sdict)
+    str(sdict)
 
 
 def test_aparc_stats_read() -> None:
