@@ -34,8 +34,8 @@
     :target: https://github.com/PyCQA/bandit
     :alt: Security Status
 
-.. image:: https://raw.githubusercontent.com/oytundemirbilek/avicortex/dev/coverage-badge/coverage_badge.svg
-    :target: https://raw.githubusercontent.com/oytundemirbilek/avicortex/dev/coverage-badge/coverage_badge.svg
+.. image:: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
+    :target: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
     :alt: Coverage
 
 .. image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
