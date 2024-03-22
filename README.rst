@@ -26,13 +26,17 @@
     :target: https://www.python.org/downloads/
     :alt: Python
 
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+    :target: https://github.com/astral-sh/ruff
+    :alt: Ruff
+
 .. image:: https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit
     :alt: Security Status
 
-.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
-    :target: https://github.com/astral-sh/ruff
-    :alt: Ruff
+.. image:: https://raw.githubusercontent.com/oytundemirbilek/avicortex/dev/coverage-badge/coverage_badge.svg
+    :target: https://raw.githubusercontent.com/oytundemirbilek/avicortex/dev/coverage-badge/coverage_badge.svg
+    :alt: Coverage
 
 .. image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml
