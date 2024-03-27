@@ -1,7 +1,6 @@
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
     :target: https://github.com/pre-commit/pre-commit
     :alt: Pre-commit enabled
-
 .. image:: https://img.shields.io/badge/license-Apache%202.0-green.svg
     :target: https://opensource.org/licenses/Apache-2.0
     :alt: License
