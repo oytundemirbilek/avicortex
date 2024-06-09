@@ -38,7 +38,7 @@
     :target: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
     :alt: Coverage
 
-.. |badge-precommit| image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
+.. |badge-quality| image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml
     :alt: Pre-commit checks
 
@@ -54,7 +54,7 @@ Avicortex - Brain Connectivity Graph Builder
 ============================================
 
 |badge-precommit| |badge-license| |badge-black| |badge-mypy| |badge-isort| |badge-pyright|
-|badge-python| |badge-ruff| |badge-bandit| |badge-coverage| |badge-precommit| |badge-tests| |badge-publish|
+|badge-python| |badge-ruff| |badge-bandit| |badge-coverage| |badge-quality| |badge-tests| |badge-publish|
 
 Python functions and classes to build connectivity graphs and datasets from Freesurfer's brain cortical measurements.
 
