@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
@@ -144,7 +145,7 @@ exclude_dirs = ["tests", ".venv"]
 verbose = true
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 extend-include = ["*.ipynb", ".*_version.py"]
 output-format = "grouped"
 line-length = 120
@@ -182,7 +183,7 @@ pylint.max-args = 15
 pylint.max-positional-args = 15
 preview = true
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "__init__.py" = ["F401","F403"]
 "test_*.py" = ["S101", "PLR2004"]
 
@@ -228,7 +229,7 @@ html.show_contexts = true
 html.skip_covered = false
 
 [tool.pyright]
-pythonVersion = "3.x"
+pythonVersion = "3.10"
 
 [tool.codespell]
 count = true

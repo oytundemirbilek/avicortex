@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 from typing import Any
 
+from avicortex.freesurfer.dtypes import StableDict
 from avicortex.freesurfer.exceptions import BadFileError
-from avicortex.freesurfer.types import StableDict
 
 
 class StatsParserError(Exception):
