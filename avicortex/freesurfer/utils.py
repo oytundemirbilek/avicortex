@@ -5,7 +5,7 @@ from __future__ import annotations
 # import logging
 from typing import Any
 
-from avicortex.freesurfer.types import Ddict, StableDict
+from avicortex.freesurfer.dtypes import Ddict, StableDict
 
 
 def unique_union(seq: list[Any]) -> list[Any]:

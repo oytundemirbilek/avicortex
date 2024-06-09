@@ -5,9 +5,9 @@ import os
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
+from avicortex.freesurfer.dtypes import StableDict
 from avicortex.freesurfer.parsers import AparcStatsParser
 from avicortex.freesurfer.reader import StatsCollector
-from avicortex.freesurfer.types import StableDict
 
 FILE_PATH = os.path.dirname(__file__)
 UPDATE_GOLD_STANDARD = False

@@ -13,9 +13,9 @@ import sys
 import warnings
 from typing import Any
 
+from avicortex.freesurfer.dtypes import Ddict
 from avicortex.freesurfer.exceptions import BadFileError
 from avicortex.freesurfer.parsers import AparcStatsParser
-from avicortex.freesurfer.types import Ddict
 from avicortex.freesurfer.utils import sanitize_table
 from avicortex.freesurfer.writer import TableWriter
 
@@ -123,7 +123,7 @@ def check_subjdirs() -> str:
     If found, returns the SUBJECTS_DIR
     """
     if "SUBJECTS_DIR" not in os.environ:
-        logging.info("ERROR: SUBJECTS_DIR environment variable not defined!")
+        aparclogger.info("ERROR: SUBJECTS_DIR environment variable not defined!")
         sys.exit(1)
     return os.environ["SUBJECTS_DIR"]
 
@@ -131,7 +131,7 @@ def check_subjdirs() -> str:
 def sanity_check(options: Any) -> None:
     """Check if inputs make sense."""
     if options.subjects is not None and len(options.subjects) < 1:
-        logging.info("ERROR: at least 1 subject must be provided")
+        aparclogger.info("ERROR: at least 1 subject must be provided")
         sys.exit(1)
 
     if (
@@ -140,10 +140,10 @@ def sanity_check(options: Any) -> None:
         and options.qdec is None
         and options.qdeclong is None
     ):
-        logging.info(
+        aparclogger.info(
             "ERROR: Specify one of --subjects, --subjectsfile --qdec or --qdec-long"
         )
-        logging.info("       or run with --help for help.")
+        aparclogger.info("       or run with --help for help.")
         sys.exit(1)
 
     count = 0
@@ -156,16 +156,16 @@ def sanity_check(options: Any) -> None:
     if options.qdeclong is not None:
         count = count + 1
     if count > 1:
-        logging.info(
+        aparclogger.info(
             "ERROR: Please specify just one of  --subjects, --subjectsfile --qdec or --qdec-long."
         )
         sys.exit(1)
 
     if not options.outputfile:
-        logging.info("ERROR: output table name should be specified")
+        aparclogger.info("ERROR: output table name should be specified")
         sys.exit(1)
     if not options.hemi:
-        logging.info("ERROR: hemisphere should be provided (lh or rh)")
+        aparclogger.info("ERROR: hemisphere should be provided (lh or rh)")
         sys.exit(1)
 
     # parse the parcs file
@@ -175,7 +175,7 @@ def sanity_check(options: Any) -> None:
             with open(options.parcsfile, encoding="utf-8") as fp:
                 options.parcs = [line.strip() for line in fp]
         except OSError:
-            logging.info("ERROR: cannot read " + options.parcsfile)
+            aparclogger.info("ERROR: cannot read " + options.parcsfile)
 
 
 def options_parse() -> Any:  # noqa: PLR0914
@@ -294,7 +294,7 @@ def options_parse() -> Any:  # noqa: PLR0914
     sanity_check(options)
 
     if options.reportroiflag:
-        logging.info("WARNING: --report-rois deprecated. Use -v instead")
+        aparclogger.info("WARNING: --report-rois deprecated. Use -v instead")
 
     if options.verboseflag:
         aparclogger.setLevel(logging.DEBUG)
@@ -318,7 +318,7 @@ def assemble_inputs(options: Any) -> Any:  # noqa: C901
     specs_paths = []
     # check the subjects dir
     subjdir = check_subjdirs()
-    logging.info(subjdir)
+    aparclogger.info(subjdir)
     # in case the user gave --subjectsfile argument
     if o.subjectsfile is not None:
         o.subjects = []
@@ -327,7 +327,7 @@ def assemble_inputs(options: Any) -> Any:  # noqa: C901
                 for subfromfile in fp:
                     o.subjects.append(subfromfile.strip())
         except OSError:
-            logging.info(f"ERROR: the file {o.subjectsfile} does not exist")
+            aparclogger.info(f"ERROR: the file {o.subjectsfile} does not exist")
             sys.exit(1)
     if o.qdec is not None:
         o.subjects = []
@@ -341,9 +341,9 @@ def assemble_inputs(options: Any) -> Any:  # noqa: C901
                     fsid = row["fsid"].strip()
                     if fsid[0] != "#":
                         o.subjects.append(fsid)
-                logging.info(o.subjects)
+                aparclogger.info(o.subjects)
         except OSError:
-            logging.info(f"ERROR: the file {o.qdec} does not exist")
+            aparclogger.info(f"ERROR: the file {o.qdec} does not exist")
             sys.exit(1)
     if o.qdeclong is not None:
         o.subjects = []
@@ -358,7 +358,7 @@ def assemble_inputs(options: Any) -> Any:  # noqa: C901
                     if fsid[0] != "#":
                         o.subjects.append(fsid + ".long." + row["fsid-base"].strip())
         except OSError:
-            logging.info(f"ERROR: the file {o.qdeclong} does not exist")
+            aparclogger.info(f"ERROR: the file {o.qdeclong} does not exist")
             sys.exit(1)
 
     for sub in o.subjects:
@@ -402,7 +402,7 @@ def main() -> None:
     pretable = []
 
     # Parse the parc.stats files
-    logging.info("Parsing the .stats files")
+    aparclogger.info("Parsing the .stats files")
     for specifier, filepath in subj_listoftuples:
         try:
             aparclogger.debug("-" * 20)
@@ -417,26 +417,27 @@ def main() -> None:
             aparclogger.debug(parc_measure_map)
         except BadFileError as e:
             if options.skipflag:
-                logging.info("Skipping " + str(e))
+                aparclogger.info("Skipping " + str(e))
                 continue
             else:
-                logging.info(
-                    "ERROR: The stats file "
-                    + str(e)
-                    + " is not found or is too small to be a valid statsfile"
+                aparclogger.info(
+                    "ERROR: The stats file %s is not found or is too small to be a valid statsfile",
+                    e,
                 )
-                logging.info("Use --skip flag to automatically skip bad stats files")
+                aparclogger.info(
+                    "Use --skip flag to automatically skip bad stats files"
+                )
                 sys.exit(1)
 
         pretable.append((specifier, parc_measure_map))
 
     # Make sure the table has the same number of cols for all stats files
     # and merge them up, clean them up etc. More in the documentation of the fn.
-    logging.info("Building the table..")
+    aparclogger.info("Building the table..")
     rows, columns, table = sanitize_table(pretable, options.commonparcflag)
 
     # Write this table ( in memory ) to disk.. function uses TableWriter class
-    logging.info(f"Writing the table to {options.outputfile}")
+    aparclogger.info(f"Writing the table to {options.outputfile}")
     write_table(options, rows, columns, table)
 
     # always exit with 0 exit code

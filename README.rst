@@ -1,57 +1,60 @@
-.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
+.. |badge-precommit| image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
     :target: https://github.com/pre-commit/pre-commit
     :alt: Pre-commit enabled
 
-.. image:: https://img.shields.io/badge/license-Apache%202.0-green.svg
+.. |badge-license| image:: https://img.shields.io/badge/license-Apache%202.0-green.svg
     :target: https://opensource.org/licenses/Apache-2.0
     :alt: License
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+.. |badge-black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://github.com/psf/black
     :alt: Code style: black
 
-.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
+.. |badge-mypy| image:: http://www.mypy-lang.org/static/mypy_badge.svg
     :target: http://mypy-lang.org/
     :alt: Checked with mypy
 
-.. image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+.. |badge-isort| image:: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
     :target: https://pycqa.github.io/isort/
     :alt: isort
 
-.. image:: https://microsoft.github.io/pyright/img/pyright_badge.svg
+.. |badge-pyright| image:: https://microsoft.github.io/pyright/img/pyright_badge.svg
     :target: https://microsoft.github.io/pyright/
     :alt: pyright
 
-.. image:: https://img.shields.io/badge/python-3.7+-blue.svg
+.. |badge-python| image:: https://img.shields.io/badge/python-3.7+-blue.svg
     :target: https://www.python.org/downloads/
     :alt: Python
 
-.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+.. |badge-ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
     :target: https://github.com/astral-sh/ruff
     :alt: Ruff
 
-.. image:: https://img.shields.io/badge/security-bandit-yellow.svg
+.. |badge-bandit| image:: https://img.shields.io/badge/security-bandit-yellow.svg
     :target: https://github.com/PyCQA/bandit
     :alt: Security Status
 
-.. image:: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
+.. |badge-coverage| image:: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/blob/main/coverage_badge.svg
     :alt: Coverage
 
-.. image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
+.. |badge-quality| image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml/badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-quality-check.yml
     :alt: Pre-commit checks
 
-.. image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-tests.yml/badge.svg
+.. |badge-tests| image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-tests.yml/badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/actions/workflows/run-tests.yml
     :alt: Unittests
 
-.. image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/python-publish.yml/badge.svg
+.. |badge-publish| image:: https://github.com/oytundemirbilek/avicortex/actions/workflows/python-publish.yml/badge.svg
     :target: https://github.com/oytundemirbilek/avicortex/actions/workflows/python-publish.yml
     :alt: Publish package
 
 Avicortex - Brain Connectivity Graph Builder
 ============================================
+
+|badge-precommit| |badge-license| |badge-black| |badge-mypy| |badge-isort| |badge-pyright|
+|badge-python| |badge-ruff| |badge-bandit| |badge-coverage| |badge-quality| |badge-tests| |badge-publish|
 
 Python functions and classes to build connectivity graphs and datasets from Freesurfer's brain cortical measurements.
 
