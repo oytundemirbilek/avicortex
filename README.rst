@@ -53,8 +53,8 @@
 Avicortex - Brain Connectivity Graph Builder
 ============================================
 
-|badge-precommit||badge-license||badge-black||badge-mypy||badge-isort||badge-pyright|
-|badge-python||badge-ruff||badge-bandit||badge-coverage||badge-precommit||badge-tests||badge-publish|
+|badge-precommit| |badge-license| |badge-black| |badge-mypy| |badge-isort| |badge-pyright|
+|badge-python| |badge-ruff| |badge-bandit| |badge-coverage| |badge-precommit| |badge-tests| |badge-publish|
 
 Python functions and classes to build connectivity graphs and datasets from Freesurfer's brain cortical measurements.
 
