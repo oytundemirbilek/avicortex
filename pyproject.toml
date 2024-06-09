@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Medical Science Apps.",
@@ -144,7 +145,7 @@ exclude_dirs = ["tests", ".venv"]
 verbose = true
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 extend-include = ["*.ipynb", ".*_version.py"]
 output-format = "grouped"
 line-length = 120
@@ -228,7 +229,7 @@ html.show_contexts = true
 html.skip_covered = false
 
 [tool.pyright]
-pythonVersion = "3.x"
+pythonVersion = "3.10"
 
 [tool.codespell]
 count = true
