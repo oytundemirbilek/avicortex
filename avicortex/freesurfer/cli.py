@@ -13,9 +13,9 @@ import sys
 import warnings
 from typing import Any
 
+from avicortex.freesurfer.dtypes import Ddict
 from avicortex.freesurfer.exceptions import BadFileError
 from avicortex.freesurfer.parsers import AparcStatsParser
-from avicortex.freesurfer.types import Ddict
 from avicortex.freesurfer.utils import sanitize_table
 from avicortex.freesurfer.writer import TableWriter
 

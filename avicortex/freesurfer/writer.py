@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from avicortex.freesurfer.types import Ddict
+from avicortex.freesurfer.dtypes import Ddict
 
 
 class TableWriter:
